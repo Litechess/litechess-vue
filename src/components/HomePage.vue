@@ -5,4 +5,5 @@
   <div>
     HomePage
   </div>
+  <router-link to="/play">/play</router-link>
 </template>
