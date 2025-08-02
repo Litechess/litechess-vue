@@ -1,14 +1,28 @@
 <script setup lang="ts">
-import { useStompSocketStore } from './stores/useStompSocketStore';
+import { watch } from 'vue'
+import { useAuthStore } from './stores/useAuthStore'
+import { useStompSocketStore } from './stores/useStompSocketStore'
 
 const stompSocketStore = useStompSocketStore()
-stompSocketStore.connect('http://localhost:8080/ws')
+const authStore = useAuthStore()
+
+watch(
+  () => authStore.user,
+  (newUser) => {
+    if (newUser) {
+      console.log('login')
+      stompSocketStore.connect()
+    } else {
+      console.log('logout')
+      stompSocketStore.disconnect()
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
-  <router-view>
-
-  </router-view>
+  <router-view> </router-view>
 </template>
 
 <style scoped></style>

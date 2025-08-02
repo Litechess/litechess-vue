@@ -1,7 +1,13 @@
 import { defineStore } from 'pinia'
 import { Client } from '@stomp/stompjs'
 import { readonly, ref } from 'vue'
-import type { IMessage, IPublishParams, StompSubscription } from '@stomp/stompjs'
+import type {
+  IMessage,
+  IPublishParams,
+  StompHeaders,
+  StompSubscription,
+} from '@stomp/stompjs'
+import { useAuthStore } from './useAuthStore'
 
 export type SubscriptionCallback = (payload: IMessage) => void
 export type SubscriptionInfo = {
@@ -15,6 +21,7 @@ export type PendingMessage = {
   payload: string
 }
 export const useStompSocketStore = defineStore('stompWebSocket', () => {
+  const BROKER_URL: string = 'http://localhost:8080/ws'
   const DEFAULT_RECONNECT_DELAY: number = 2000
   const SUBSCRIBE_PREFIX = '/topic'
   const SEND_PREFIX = '/app'
@@ -29,10 +36,21 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
   const isConnected = ref(false)
   const isPendingMessages = ref(false)
 
-  const connect = (brokerURL: string, reconnectDelay: number = DEFAULT_RECONNECT_DELAY) => {
+  const authStore = useAuthStore()
+  const authHeaders = (): StompHeaders => {
+    const headers: StompHeaders = {}
+    if (authStore.user) {
+      headers['Authorization'] = `Bearer ${authStore.user.access_token}`
+    }
+    console.log(headers)
+    return headers
+  }
+  const connect = async (reconnectDelay: number = DEFAULT_RECONNECT_DELAY) => {
+    if(isConnected.value === true) await disconnect()
     _client = new Client({
-      brokerURL,
+      brokerURL: BROKER_URL,
       reconnectDelay,
+      connectHeaders: authHeaders(),
 
       onConnect: () => {
         console.log('connected')
@@ -73,9 +91,13 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
     if (!isPendingMessages.value) _pendingMessages.length = 0
   }
 
-  const disconnect = () => {
+  const disconnect = async () => {
     isConnected.value = false
-    _client?.deactivate()
+    _activeSubscriptions.clear()
+    _pendingMessages.length = 0
+    _pendingUnsubscriptions.clear()
+    _pendingSubscriptions.clear()
+    await _client?.deactivate()
   }
 
   const reconnect = () => {
