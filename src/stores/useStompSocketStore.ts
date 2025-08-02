@@ -20,6 +20,10 @@ export type PendingMessage = {
   destination: string
   payload: string
 }
+
+// suport 1 sub on one dist
+// TODO refactor on many sub on one dist if neccessary
+// TODO reconnect a couple of hours for revalidate access token
 export const useStompSocketStore = defineStore('stompWebSocket', () => {
   const BROKER_URL: string = 'http://localhost:8080/ws'
   const DEFAULT_RECONNECT_DELAY: number = 2000
@@ -122,7 +126,9 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
       return null
     }
 
-    if (_activeSubscriptions.has(destination)) return _activeSubscriptions.get(destination)!
+    if (_activeSubscriptions.has(destination)) {
+      _activeSubscriptions.get(destination)?.unsubscribe()
+    }
 
     const info: StompSubscription = internalSubscribe(destination, callback)
     const fullInfo = {
