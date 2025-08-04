@@ -4,7 +4,7 @@ import type { BoardApi, MoveEvent } from 'vue3-chessboard'
 
 export type PlayerColor = 'w' | 'b' | 's'
 export type ChessGameInfo = {
-  gameId: string
+  gameId: number
   playerColor: PlayerColor
   boardApi: BoardApi
 }
@@ -14,18 +14,18 @@ export const useChessSocketStore = defineStore('chessSocket', () => {
 
   const subscribe = (gameInfo: ChessGameInfo): SubscriptionInfo | null => {
     console.log(gameInfo.gameId)
-    return _stompStore.subscribe(`/${gameInfo.gameId}/move`, (msg) => {
+    return _stompStore.subscribe(`/game/${gameInfo.gameId}`, (msg) => {
       const move: MoveEvent = JSON.parse(msg.body)
       if (move.color === gameInfo.playerColor || gameInfo.boardApi.getFen() === move.after) {
         return
       }
-  
+
       gameInfo.boardApi.move(move.san)
     })
   }
 
-  const sendMove = (gameId: string, move: MoveEvent): void => {
-    _stompStore.send(`/${gameId}/move`, JSON.stringify(move))
+  const sendMove = (gameId: number, move: MoveEvent): void => {
+    _stompStore.send(`/game/${gameId}`, JSON.stringify(move))
   }
 
   return {
