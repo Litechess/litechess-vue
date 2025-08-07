@@ -49,6 +49,7 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
     console.log(headers)
     return headers
   }
+  
   const connect = async (reconnectDelay: number = DEFAULT_RECONNECT_DELAY) => {
     if(isConnected.value === true) await disconnect()
     _client = new Client({
