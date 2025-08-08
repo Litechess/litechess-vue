@@ -1,5 +1,3 @@
-import type { GameStatus } from "./GameStatus"
-
 export type ChessParty = {
   id: number
   white: string
@@ -10,3 +8,6 @@ export type ChessParty = {
   status: GameStatus
 
 }
+
+export type PlayerColor = 'w' | 'b' | 's'
+export type GameStatus = "DRAW" | "WIN_WHITE" | "WIN_BLACK" | "NOT_FINISHED"

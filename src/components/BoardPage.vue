@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import {
-  useChessSocketStore,
-  type ChessGameInfo,
-  type PlayerColor,
-} from '@/stores/useChessSocketStore'
+import { useChessSocketStore } from '@/stores/useChessSocketStore'
+import type { PlayerColor } from '@/types/ChessParty'
 import type { MoveRequest } from '@/types/MoveRequest'
+import type { GameInfoToSub } from '@/types/Socket'
 
 import { useRoute } from 'vue-router'
 import { BoardApi, TheChessboard, type BoardConfig, type MoveEvent } from 'vue3-chessboard'
@@ -25,7 +23,7 @@ let boardApi: BoardApi | null = null
 
 async function boardCreated(api: BoardApi) {
   const shortColor: PlayerColor = color.charAt(0) as PlayerColor
-  const gameInfo: ChessGameInfo = {
+  const gameInfo: GameInfoToSub = {
     gameId: 1,
     playerColor: shortColor,
     boardApi: api,
