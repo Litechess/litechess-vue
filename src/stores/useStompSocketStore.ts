@@ -28,8 +28,8 @@ export type PendingMessage = {
 export const useStompSocketStore = defineStore('stompWebSocket', () => {
   const BROKER_URL: string = 'http://localhost:8080/ws'
   const DEFAULT_RECONNECT_DELAY: number = 2000
-  const SUBSCRIBE_PREFIX = '/topic'
-  const SEND_PREFIX = '/app'
+  const TOPIC_PREFIX = '/topic'
+  const APP_PREFIX = '/app'
   const USER_PREFIX = '/user'
 
   let _client: Client | null = null
@@ -117,7 +117,8 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
     personal: boolean,
   ): StompSubscription => {
     const PERSONAL_PREFIX = personal ? USER_PREFIX : ""
-    return _client!.subscribe(`${PERSONAL_PREFIX}${SUBSCRIBE_PREFIX}${destination}`, (message: IMessage) =>
+    console.log(`${PERSONAL_PREFIX}${destination}`)
+    return _client!.subscribe(`${PERSONAL_PREFIX}${TOPIC_PREFIX}${destination}`, (message: IMessage) =>
       callback(message),
     )
   }
@@ -169,7 +170,7 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
 
   const internalSend = (destination: string, payload: string): void => {
     const message: IPublishParams = {
-      destination: `${SEND_PREFIX}${destination}`,
+      destination: `${APP_PREFIX}${destination}`,
       body: payload,
     }
 

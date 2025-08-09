@@ -9,6 +9,15 @@ import type { Key } from 'chessground/types'
 type MessageHandler = (message: SocketMessage, boardInfo: GameInfoToSub) => void
 
 export const useChessSocketStore = defineStore('chessSocket', () => {
+
+  const DUMMY_CREATE_REQUIEST = {
+    variant: "STANDART",
+    timeControl: "REALTIME",
+    category: "CASUAL",
+    secondPerSide: 0,
+    increment: 0
+  }
+
   const _stompStore = useStompSocketStore()
 
   const handlers: Record<SocketMessageType, MessageHandler> = {
@@ -42,10 +51,10 @@ export const useChessSocketStore = defineStore('chessSocket', () => {
 
   const enterInQueue = () => {
     const subInfo: SubscriptionInfo | null =  _stompStore.subscribe(`/matchmaking/queue`, (msg) => {
+      console.log("GAME FINDED")
       console.log(msg.body)
-    })
-    console.log(subInfo)
-    _stompStore.send("/matchmaking/queue", "")
+    }, true)
+    _stompStore.send("/matchmaking/queue", JSON.stringify(DUMMY_CREATE_REQUIEST))
     return subInfo;
   }
 
