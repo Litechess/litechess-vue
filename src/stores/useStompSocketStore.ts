@@ -1,12 +1,7 @@
 import { defineStore } from 'pinia'
 import { Client } from '@stomp/stompjs'
 import { readonly, ref } from 'vue'
-import type {
-  IMessage,
-  IPublishParams,
-  StompHeaders,
-  StompSubscription,
-} from '@stomp/stompjs'
+import type { IMessage, IPublishParams, StompHeaders, StompSubscription } from '@stomp/stompjs'
 import { useAuthStore } from './useAuthStore'
 
 export type SubscriptionCallback = (payload: IMessage) => void
@@ -15,6 +10,12 @@ export type SubscriptionInfo = {
   unsubscribe: () => void
   callback: SubscriptionCallback
   destination: string
+  personal: boolean
+}
+type PendingSubscriptionInfo = {
+  destination: string
+  callback: SubscriptionCallback
+  personal: boolean
 }
 export type PendingMessage = {
   destination: string
@@ -29,10 +30,11 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
   const DEFAULT_RECONNECT_DELAY: number = 2000
   const SUBSCRIBE_PREFIX = '/topic'
   const SEND_PREFIX = '/app'
+  const USER_PREFIX = '/user'
 
   let _client: Client | null = null
 
-  const _pendingSubscriptions = new Map<string, SubscriptionCallback>()
+  const _pendingSubscriptions = new Map<string, PendingSubscriptionInfo>()
   const _activeSubscriptions = new Map<string, SubscriptionInfo>()
   const _pendingMessages: PendingMessage[] = []
   const _pendingUnsubscriptions = new Set<string>()
@@ -49,9 +51,9 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
     console.log(headers)
     return headers
   }
-  
+
   const connect = async (reconnectDelay: number = DEFAULT_RECONNECT_DELAY) => {
-    if(isConnected.value === true) await disconnect()
+    if (isConnected.value === true) await disconnect()
     _client = new Client({
       brokerURL: BROKER_URL,
       reconnectDelay,
@@ -65,11 +67,11 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
         _pendingUnsubscriptions.clear()
 
         _activeSubscriptions.forEach((info, destination) => {
-          internalSubscribe(destination, info.callback)
+          internalSubscribe(destination, info.callback, info.personal)
         })
 
-        _pendingSubscriptions.forEach((callback, destination) => {
-          subscribe(destination, callback)
+        _pendingSubscriptions.forEach((info, destination) => {
+          subscribe(destination, info.callback, info.personal)
         })
         _pendingSubscriptions.clear()
 
@@ -112,8 +114,10 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
   const internalSubscribe = (
     destination: string,
     callback: SubscriptionCallback,
+    personal: boolean,
   ): StompSubscription => {
-    return _client!.subscribe(`${SUBSCRIBE_PREFIX}${destination}`, (message: IMessage) =>
+    const PERSONAL_PREFIX = personal ? USER_PREFIX : ""
+    return _client!.subscribe(`${PERSONAL_PREFIX}${SUBSCRIBE_PREFIX}${destination}`, (message: IMessage) =>
       callback(message),
     )
   }
@@ -121,22 +125,27 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
   const subscribe = (
     destination: string,
     callback: SubscriptionCallback,
+    personal: boolean = false,
   ): SubscriptionInfo | null => {
     if (isConnected.value === false) {
-      _pendingSubscriptions.set(destination, callback)
+      _pendingSubscriptions.set(destination, { destination, callback, personal })
       return null
     }
 
     if (_activeSubscriptions.has(destination)) {
-      _activeSubscriptions.get(destination)?.unsubscribe()
+      const subInfo: SubscriptionInfo = _activeSubscriptions.get(destination)!
+      if (subInfo.personal == personal) {
+        _activeSubscriptions.get(destination)!.unsubscribe()
+      }
     }
 
-    const info: StompSubscription = internalSubscribe(destination, callback)
+    const info: StompSubscription = internalSubscribe(destination, callback, personal)
     const fullInfo = {
       id: info.id,
       unsubscribe: info.unsubscribe,
       callback,
       destination,
+      personal,
     }
 
     _activeSubscriptions.set(destination, fullInfo)

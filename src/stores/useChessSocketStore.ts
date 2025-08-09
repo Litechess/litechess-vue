@@ -32,12 +32,21 @@ export const useChessSocketStore = defineStore('chessSocket', () => {
     },
   }
 
-  const subscribe = (gameInfo: GameInfoToSub): SubscriptionInfo | null => {
+  const subscribeToGame = (gameInfo: GameInfoToSub): SubscriptionInfo | null => {
     return _stompStore.subscribe(`/game/${gameInfo.gameId}`, (msg) => {
       const message: SocketMessage = JSON.parse(msg.body)
       const messageType: SocketMessageType = message.headers['type'] as SocketMessageType
       handlers[messageType](message, gameInfo)
     })
+  }
+
+  const enterInQueue = () => {
+    const subInfo: SubscriptionInfo | null =  _stompStore.subscribe(`/matchmaking/queue`, (msg) => {
+      console.log(msg.body)
+    })
+    console.log(subInfo)
+    _stompStore.send("/matchmaking/queue", "")
+    return subInfo;
   }
 
   const sendMove = (gameId: number, move: MoveRequest): void => {
@@ -46,6 +55,7 @@ export const useChessSocketStore = defineStore('chessSocket', () => {
 
   return {
     sendMove,
-    subscribe,
+    subscribe: subscribeToGame,
+    enterInQueue
   }
 })
