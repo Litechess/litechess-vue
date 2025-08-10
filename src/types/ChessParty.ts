@@ -2,7 +2,7 @@ export type ChessParty = {
   id: number
   white: string
   black: string
-  moveSan: string,
+  moveUci: string[],
   fen: string,
   initFen: string,
   status: GameStatus

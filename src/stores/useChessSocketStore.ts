@@ -3,8 +3,8 @@ import { useStompSocketStore, type SubscriptionInfo } from './useStompSocketStor
 import { BoardApi, type Promotion } from 'vue3-chessboard'
 import type { MoveRequest } from '@/types/MoveRequest'
 import type { GameInfoToSub, SocketMessage, SocketMessageType } from '@/types/Socket'
-import type { ChessParty } from '@/types/ChessParty'
 import type { Key } from 'chessground/types'
+import { useRouter } from 'vue-router'
 
 type MessageHandler = (message: SocketMessage, boardInfo: GameInfoToSub) => void
 
@@ -19,13 +19,9 @@ export const useChessSocketStore = defineStore('chessSocket', () => {
   }
 
   const _stompStore = useStompSocketStore()
+  const router = useRouter()
 
   const handlers: Record<SocketMessageType, MessageHandler> = {
-    gameInfo: (message, boardInfo) => {
-      const partyInfo: ChessParty = message.payload as ChessParty
-      boardInfo.boardApi.loadPgn(partyInfo.moveSan)
-    },
-
     move: (message, boardInfo) => {
       const move: MoveRequest = message.payload as MoveRequest
       const boardApi: BoardApi = boardInfo.boardApi
@@ -52,7 +48,8 @@ export const useChessSocketStore = defineStore('chessSocket', () => {
   const enterInQueue = () => {
     const subInfo: SubscriptionInfo | null =  _stompStore.subscribe(`/matchmaking/queue`, (msg) => {
       console.log("GAME FINDED")
-      console.log(msg.body)
+      const gameId = JSON.parse(msg.body).payload.gameId as number
+      router.push(`/${gameId}`)
     }, true)
     _stompStore.send("/matchmaking/queue", JSON.stringify(DUMMY_CREATE_REQUIEST))
     return subInfo;

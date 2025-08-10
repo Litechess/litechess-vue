@@ -1,31 +1,43 @@
 <script setup lang="ts">
+import { useAuthStore } from '@/stores/useAuthStore'
 import { useChessSocketStore } from '@/stores/useChessSocketStore'
-import type { PlayerColor } from '@/types/ChessParty'
+import { useHttpClient } from '@/stores/useHttpClient'
+import type { ChessParty } from '@/types/ChessParty'
 import type { MoveRequest } from '@/types/MoveRequest'
 import type { GameInfoToSub } from '@/types/Socket'
+import { reactive, ref } from 'vue'
 
 import { useRoute } from 'vue-router'
 import { BoardApi, TheChessboard, type BoardConfig, type MoveEvent } from 'vue3-chessboard'
 import 'vue3-chessboard/style.css'
 
 const chessSocketStore = useChessSocketStore()
+const httpClient = useHttpClient()
+const authStore = useAuthStore()
 const route = useRoute()
 
-const color: string = route.query.color as string
-const validColor = color === 'white' || color === 'black' ? color : undefined
+const isLoaded = ref(false)
+const gameId: number = Number(route.params.gameId)
+let playerColor: "white" | "black" | undefined
+let chessParty: ChessParty;
+const boardConfig: BoardConfig = reactive({})
+let boardApi: BoardApi;
+console.log(gameId)
 
-const boardConfig: BoardConfig = {
-  orientation: validColor,
-  viewOnly: color === 'spectator' ? true : false,
-}
-
-let boardApi: BoardApi | null = null
+httpClient.get(`api/v1/games/${gameId}`).then( (result: ChessParty) => {
+  console.log(result)
+  chessParty = result
+  if(chessParty.white == authStore.getId()) playerColor = "white"
+  else if(chessParty.black == authStore.getId()) playerColor = "black"
+  boardConfig.orientation = playerColor == undefined ? "white" : playerColor
+  boardConfig.viewOnly = playerColor == undefined ? true : false
+  isLoaded.value = true
+})
 
 async function boardCreated(api: BoardApi) {
-  const shortColor: PlayerColor = color.charAt(0) as PlayerColor
+  api.loadPgn(chessParty.moveUci.join(" "))
   const gameInfo: GameInfoToSub = {
-    gameId: 1,
-    playerColor: shortColor,
+    gameId: gameId,
     boardApi: api,
   }
   boardApi = api
@@ -34,7 +46,7 @@ async function boardCreated(api: BoardApi) {
 }
 
 function moveHandler(move: MoveEvent) {
-  if (boardApi?.getTurnColor() == color) return
+  if (boardApi?.getTurnColor() == playerColor) return
   console.log('send move')
   const moveRequest: MoveRequest = {
     from: move.from,
@@ -42,18 +54,24 @@ function moveHandler(move: MoveEvent) {
     promotion: move.promotion || null,
     san: move.san,
   }
-  console.log(moveRequest)
-  chessSocketStore.sendMove(1, moveRequest)
+
+  chessSocketStore.sendMove(gameId, moveRequest)
 }
 </script>
 <template>
   <div>
-    <TheChessboard
-      @board-created="boardCreated"
-      :board-config="boardConfig"
-      :player-color="validColor"
-      @move="moveHandler"
-    ></TheChessboard>
+    <div v-if="isLoaded">
+      <TheChessboard
+        reactive-config
+        @board-created="boardCreated"
+        :board-config="boardConfig"
+        :player-color="playerColor"
+        @move="moveHandler"
+      ></TheChessboard>
+    </div>
+    <div v-else>
+      <TheChessboard :board-config="{viewOnly: true}"></TheChessboard>
+    </div>
     <router-link to="/">/home</router-link>
     <br />
     <router-link to="/play">/play</router-link>

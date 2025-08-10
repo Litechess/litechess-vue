@@ -1,5 +1,4 @@
 import type { BoardApi } from "vue3-chessboard";
-import type { PlayerColor } from "./ChessParty";
 
 export type SocketMessage = {
   payload: object;
@@ -8,8 +7,7 @@ export type SocketMessage = {
 
 export type GameInfoToSub = {
   gameId: number
-  playerColor: PlayerColor
   boardApi: BoardApi
 }
 
-export type SocketMessageType = "gameInfo" | "move"
+export type SocketMessageType = "move"

@@ -1,4 +1,5 @@
 
+import BoardTest from '@/components/BoardTest.vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -28,10 +29,15 @@ const router = createRouter({
       component: LoginCallbackAuthPage
     },
     {
-      path: '/board',
+      path: '/:gameId',
       name: 'board',
       component: BoardPage,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/test',
+      name: 'test',
+      component: BoardTest
     }
   ],
 })

@@ -30,6 +30,10 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
   }
 
+  function getId(): string | null {
+    return user.value == null? null : user.value.profile.sub
+  }
+
   return {
     user,
     login,
@@ -37,5 +41,6 @@ export const useAuthStore = defineStore('auth', () => {
     loadUser,
     handleLoginCallback,
     handleLogoutCallback,
+    getId
   }
 })
