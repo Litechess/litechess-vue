@@ -25,6 +25,7 @@ export const useChessSocketStore = defineStore('chessSocket', () => {
     move: (message, boardInfo) => {
       const move: MoveRequest = message.payload as MoveRequest
       const boardApi: BoardApi = boardInfo.boardApi
+      console.log(move.promotion)
       if (boardApi.getLastMove() != undefined && boardApi.getLastMove()!.san == move.san) {
         return
       }
