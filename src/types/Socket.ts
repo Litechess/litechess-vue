@@ -10,4 +10,4 @@ export type GameInfoToSub = {
   boardApi: BoardApi
 }
 
-export type SocketMessageType = "move"
+export type SocketMessageType = "move" | "gameFinish"

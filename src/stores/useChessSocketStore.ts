@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { useStompSocketStore, type SubscriptionInfo } from './useStompSocketStore'
 import { BoardApi, type Promotion } from 'vue3-chessboard'
-import type { MoveRequest } from '@/types/MoveRequest'
+import type { GameResult, MoveRequest } from '@/types/MoveRequest'
 import type { GameInfoToSub, SocketMessage, SocketMessageType } from '@/types/Socket'
 import type { Key } from 'chessground/types'
 import { useRouter } from 'vue-router'
@@ -22,7 +22,7 @@ export const useChessSocketStore = defineStore('chessSocket', () => {
   const router = useRouter()
 
   const handlers: Record<SocketMessageType, MessageHandler> = {
-    move: (message, boardInfo) => {
+    "move": (message, boardInfo) => {
       const move: MoveRequest = message.payload as MoveRequest
       const boardApi: BoardApi = boardInfo.boardApi
       console.log(move.promotion)
@@ -36,6 +36,12 @@ export const useChessSocketStore = defineStore('chessSocket', () => {
         promotion: move.promotion as Promotion,
       })
     },
+
+    "gameFinish": (message: SocketMessage) => {
+      const resultMessage: GameResult = message.payload as GameResult
+      console.log(resultMessage.status)
+    }
+
   }
 
   const subscribeToGame = (gameInfo: GameInfoToSub): SubscriptionInfo | null => {
