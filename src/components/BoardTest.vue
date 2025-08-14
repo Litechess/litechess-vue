@@ -1,10 +1,11 @@
 <script setup lang="ts">
-// TODO ONLY FOR DEV TESTING , DELETE FROM ROUTER TOO
+// TODO ONLY FOR DEV TESTING , DELETE FROM ROUTER TO
+import { } from 'naive-ui';
 
 </script>
 
 <template>
-  <div>
-    <n-button>BUTTON</n-button>
-  </div>
+  <n-flex>
+
+  </n-flex>
 </template>
