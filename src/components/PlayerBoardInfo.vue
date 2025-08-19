@@ -1,22 +1,14 @@
 <script setup lang="ts">
 import { NFlex, NAvatar, NText } from 'naive-ui'
-import { PawnIcon, KnightIcon, BishopIcon, RookIcon, KingIcon, QueenIcon } from './icon'
 import type { PlayerColor } from '@/types/ChessParty'
+import PieceIcon from './icon/PieceIcon.vue'
+
 interface Props {
   name: string
   avatar: string
   pieces: string[]
   color: PlayerColor
 }
-
-const pieceMap = {
-  p: PawnIcon,
-  n: KnightIcon,
-  b: BishopIcon,
-  r: RookIcon,
-  q: QueenIcon,
-  k: KingIcon,
-};
 
 const props = defineProps<Props>();
 </script>
@@ -29,7 +21,9 @@ const props = defineProps<Props>();
        {{ props.name }}
       </n-text>
       <n-text style="height: 1.2em">
-        <component v-for="(piece, index) in props.pieces" :key="index" :is="pieceMap[piece]" :color="props.color"/>
+        <span v-for="(piece, index) in props.pieces" :key="index">
+          <piece-icon :color="props.color" :piece="piece"/>
+        </span>
       </n-text>
     </n-flex>
   </n-flex>
