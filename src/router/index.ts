@@ -1,13 +1,13 @@
 
-import BoardTest from '@/components/BoardTest.vue'
+import BoardTest from '@/page/BoardTest.vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { createRouter, createWebHistory } from 'vue-router'
 
 
-const HomePage = () => import("@/components/HomePage.vue")
-const PlayPage = () => import("@/components/PlayPage.vue")
-const BoardPage = () => import("@/components/BoardPage.vue")
-const LoginCallbackAuthPage = () => import("@/components/LoginCallbackPage.vue")
+const HomePage = () => import("@/page/HomePage.vue")
+const PlayPage = () => import("@/page/PlayPage.vue")
+const BoardPage = () => import("@/page/BoardPage.vue")
+const LoginCallbackAuthPage = () => import("@/page/LoginCallbackPage.vue")
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
