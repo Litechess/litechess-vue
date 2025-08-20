@@ -93,7 +93,8 @@ const stopView = () => {
            <n-button @click="viewNext">
             <arrow-icon rotated/>
            </n-button>
-
+            <router-link to="/">/home</router-link>
+            <router-link to="/play">/play</router-link>
         </n-card>
       </n-flex>
     </n-flex>

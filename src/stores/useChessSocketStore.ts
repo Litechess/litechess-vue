@@ -6,7 +6,7 @@ import type { GameInfoToSub, SocketMessage, SocketMessageType } from '@/types/So
 import type { Key } from 'chessground/types'
 import { useRouter } from 'vue-router'
 
-type MessageHandler = (message: SocketMessage, boardInfo: GameInfoToSub) => void
+type MessageHandler = (message: SocketMessage, boardInfo: GameInfoToSub, callback?: () => void) => void
 
 export const useChessSocketStore = defineStore('chessSocket', () => {
 
@@ -22,10 +22,9 @@ export const useChessSocketStore = defineStore('chessSocket', () => {
   const router = useRouter()
 
   const handlers: Record<SocketMessageType, MessageHandler> = {
-    "move": (message, boardInfo) => {
+    "move": (message, boardInfo, callback?: () => void) => {
       const move: MoveRequest = message.payload as MoveRequest
       const boardApi: BoardApi = boardInfo.boardApi
-      console.log(move.promotion)
       if (boardApi.getLastMove() != undefined && boardApi.getLastMove()!.san == move.san) {
         return
       }
@@ -35,6 +34,8 @@ export const useChessSocketStore = defineStore('chessSocket', () => {
         to: move.to as Key,
         promotion: move.promotion as Promotion,
       })
+
+      callback?.()
     },
 
     "gameFinish": (message: SocketMessage) => {
@@ -44,11 +45,12 @@ export const useChessSocketStore = defineStore('chessSocket', () => {
 
   }
 
-  const subscribeToGame = (gameInfo: GameInfoToSub): SubscriptionInfo | null => {
+  const subscribeToGame = (gameInfo: GameInfoToSub, callback?: () => void): SubscriptionInfo | null => {
     return _stompStore.subscribe(`/game/${gameInfo.gameId}`, (msg) => {
       const message: SocketMessage = JSON.parse(msg.body)
       const messageType: SocketMessageType = message.headers['type'] as SocketMessageType
-      handlers[messageType](message, gameInfo)
+      handlers[messageType](message, gameInfo, callback)
+      callback?.();
     })
   }
 
