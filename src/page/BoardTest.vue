@@ -1,10 +1,10 @@
 <script setup lang="ts">
 // TODO ONLY FOR DEV TESTING , DELETE FROM ROUTER TO
-import { NFlex, NCard, NSpace, NText, NButton, NTable, NScrollbar, NIcon } from 'naive-ui'
+import { NFlex, NCard,  NButton, NScrollbar } from 'naive-ui'
 import ChessBoard from '@/components/ChessBoard.vue'
 import PlayerBoardInfo from '@/components/PlayerBoardInfo.vue'
 import GameTimer from '@/components/GameTimer.vue'
-import { computed, ref } from 'vue'
+import {  ref } from 'vue'
 import type { BoardApi, CapturedPieces, MoveEvent } from 'vue3-chessboard'
 import MoveTable from '@/components/MoveTable.vue'
 import { ArrowIcon, UndoIcon, EqualIcon } from '@/components/icon'
@@ -14,6 +14,12 @@ const takedPieceBlack = ref([]);
 const moves = ref([])
 
 const undo = () => {
+  const lastMove: MoveEvent | undefined = boardApi.getLastMove()
+  if(lastMove === undefined) return
+  if(lastMove.captured != undefined) {
+    const takedPieceArr = lastMove.color == 'w' ? takedPieceWhite : takedPieceBlack
+    takedPieceArr.value.pop()
+  }
   boardApi.undoLastMove()
   moves.value.pop()
 }
@@ -52,7 +58,7 @@ const stopView = () => {
       <n-flex style="height: 100%;" vertical :size="15 ">
         <n-flex justify="space-between">
           <player-board-info
-          color = "b"
+            color = "b"
             name="Player1"
             avatar="https://gw.alipayobjects.com/zos/antfincdn/aPkFc8Sj7n/method-draw-image.svg"
             :pieces="takedPieceWhite"

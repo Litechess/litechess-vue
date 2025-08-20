@@ -11,3 +11,4 @@ export type ChessParty = {
 
 export type PlayerColor = 'w' | 'b' | 's'
 export type GameStatus = "DRAW" | "WIN_WHITE" | "WIN_BLACK" | "NOT_FINISHED"
+export type PieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';

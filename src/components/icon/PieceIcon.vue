@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import type { PlayerColor } from '@/types/ChessParty';
+import type { PieceType, PlayerColor } from '@/types/ChessParty';
 import { NIcon } from 'naive-ui';
 import { BishopIcon, KingIcon, KnightIcon, PawnIcon, QueenIcon, RookIcon } from '.';
+import type { Component } from 'vue';
+
 
 const props = defineProps<{
   color: PlayerColor
   piece: string
 }>();
 
-const pieceMap = {
+const pieceMap: Record<PieceType, Component>= {
   p: PawnIcon,
   n: KnightIcon,
   b: BishopIcon,
@@ -21,7 +23,7 @@ const styleColor = props.color == "w" ? "#0a0a0a" : "#d9dede"
 </script>
 
 <template>
-  <n-icon size="18" :color="styleColor">
-    <component :is="pieceMap[props.piece]"/>
+  <n-icon size="18">
+    <component :is="pieceMap[props.piece as PieceType]"/>
   </n-icon>
 </template>
