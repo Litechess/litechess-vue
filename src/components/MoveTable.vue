@@ -27,7 +27,7 @@ const moveRows = computed(() => {
       <tbody>
         <tr v-for="(row) in moveRows" :key="row.moveNumber">
           <td style="width: 1.45em; line-height: 0.9">{{ row.moveNumber }}.</td>
-          <td class="rowElement" style="width: 3em">{{ row.white }}</td>
+          <td class="rowElement" style="width: 4em">{{ row.white }}</td>
           <td class="rowElement">{{ row.black }}</td>
         </tr>
       </tbody>

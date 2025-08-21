@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useChessSocketStore } from '@/stores/useChessSocketStore';
+import { useMatchQueue } from '@/composables/useMatchQueue';
 import { useHttpClient } from '@/stores/useHttpClient';
 import type { ShortChessParty } from '@/types/ShortChessParty';
 import { ref } from 'vue';
 
-const chessSocketStore = useChessSocketStore()
+const matchQueue = useMatchQueue()
 const httpStore = useHttpClient()
 
 const liveParty = ref<ShortChessParty[]>([]);
@@ -23,7 +23,7 @@ httpStore.get("api/v1/games/shortParty").then((result: ShortChessParty[]) => {
 <template>
   <div>
     PlayPage
-    <button @click="chessSocketStore.enterInQueue">REGISTRY</button>
+    <button @click="matchQueue.enterInQueue">REGISTRY</button>
   </div>
   <router-link to="/board?color=white">/WHITE</router-link>
   <router-link to="/board?color=black">/BLACK</router-link>
