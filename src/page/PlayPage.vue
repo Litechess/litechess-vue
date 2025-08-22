@@ -1,17 +1,17 @@
 <script setup lang="ts">
+import { useApi } from '@/composables/useApi';
 import { useMatchQueue } from '@/composables/useMatchQueue';
-import { useHttpClient } from '@/stores/useHttpClient';
 import type { ShortChessParty } from '@/types/ShortChessParty';
 import { ref } from 'vue';
 
 const matchQueue = useMatchQueue()
-const httpStore = useHttpClient()
+const api = useApi()
 
 const liveParty = ref<ShortChessParty[]>([]);
 const storedParty = ref<ShortChessParty[]>([]);
 const isLoadedParties = ref(false)
 
-httpStore.get("api/v1/games/shortParty").then((result: ShortChessParty[]) => {
+api.getAllGames().then((result: ShortChessParty[]) => {
   result.forEach((party: ShortChessParty) => {
     if(party.status == "NOT_FINISHED") liveParty.value.push(party);
     else storedParty.value.push(party)

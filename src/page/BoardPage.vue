@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref, toRefs } from 'vue'
 
 import { useRoute } from 'vue-router'
 import { BoardApi, type BoardConfig } from 'vue3-chessboard'
@@ -11,59 +11,55 @@ import GameTimer from '@/components/GameTimer.vue'
 import { ArrowIcon, EqualIcon } from '@/components/icon'
 import MoveTable from '@/components/MoveTable.vue'
 import { useChessGame } from '@/composables/useChessGame'
+import { useApi } from '@/composables/useApi'
+import type { ChessParty } from '@/types/ChessParty'
 
 const route = useRoute()
 const gameId: number = Number(route.params.gameId)
 
-let boardApi: BoardApi
-
-const chessGame = useChessGame(gameId)
+const chessGame = useChessGame()
+const api = useApi()
+const isLoaded = ref(false)
+const { playerSide, moves, takedPieceWhite, takedPieceBlack } = toRefs(chessGame)
 const boardConfig: BoardConfig = reactive({})
 
-chessGame.loadGame().then( () => {
-  boardConfig.orientation = chessGame.playerSide.value == undefined ? "white" : chessGame.playerSide.value
-  boardConfig.viewOnly = chessGame.playerSide.value == undefined ? true : false
+api.getChessGame(gameId).then( (result: ChessParty) => {
+  chessGame.setChessParty(result)
+  boardConfig.orientation = playerSide.value
+  boardConfig.viewOnly = playerSide.value == undefined ? true : false
+  isLoaded.value = true
 })
-
-const viewNext = () => {
-  boardApi.viewNext()
-}
-
-const viewPrevious = () => {
-  boardApi.viewPrevious()
-}
-
-const stopView = () => {
-  boardApi.stopViewingHistory()
-}
 
 async function boardCreated(api: BoardApi) {
   chessGame.setBoardApi(api)
-  boardApi = api
   chessGame.subscribe()
+}
+
+function test() {
+  boardConfig.viewOnly = false
 }
 
 </script>
 <template>
   <n-flex justify="center" align="center" style="height: 100vh; width: 100vw">
     <n-flex style="width: 80%; height: 90%;" justify="center" align="center">
-      <n-flex style="height: 100%;" vertical :size="15 " v-if="chessGame.isLoaded.value">
+      <n-flex style="height: 100%;" vertical :size="15 " v-if="isLoaded">
         <n-flex justify="space-between">
           <player-board-info
             color = "b"
             name="Player1"
             avatar="https://gw.alipayobjects.com/zos/antfincdn/aPkFc8Sj7n/method-draw-image.svg"
-            :pieces="chessGame.takedPieceWhite.value"
+            :pieces="takedPieceWhite"
           />
           <game-timer/>
         </n-flex>
-        <chess-board :board-created="boardCreated" :player-color="chessGame.playerSide.value" :move="chessGame.sendMove" :board-config="boardConfig"/>
+        <chess-board :board-created="boardCreated" :player-color="playerSide" :move="chessGame.sendMove" :board-config="boardConfig"/>
         <n-flex justify="space-between">
           <player-board-info
             color = "w"
             name="Player2"
             avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
-            :pieces="chessGame.takedPieceBlack.value"
+            :pieces="takedPieceBlack"
           />
           <game-timer/>
         </n-flex>
@@ -71,19 +67,20 @@ async function boardCreated(api: BoardApi) {
       <n-flex style="height: 100%; width: 30%">
         <n-card>
           <n-scrollbar style="max-height: 45em">
-            <move-table :moves="chessGame.moves.value" v-if="chessGame.moves.value.length != 0"/>
+            <move-table :moves="moves" v-if="moves.length != 0"/>
            </n-scrollbar>
-           <n-button @click="viewPrevious">
+           <n-button @click="chessGame.viewPrevious">
             <arrow-icon/>
            </n-button>
-           <n-button @click="stopView">
+           <n-button @click="chessGame.viewNext">
             <equal-icon/>
            </n-button>
-           <n-button @click="viewNext">
+           <n-button @click="chessGame.stopView">
             <arrow-icon rotated/>
            </n-button>
             <router-link to="/">/home</router-link>
             <router-link to="/play">/play</router-link>
+            <n-button @click="test">test</n-button>
         </n-card>
       </n-flex>
     </n-flex>

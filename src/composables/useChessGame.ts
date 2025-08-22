@@ -1,29 +1,27 @@
 import { useAuthStore } from "@/stores/useAuthStore";
-import { useHttpClient } from "@/stores/useHttpClient";
 import { useStompSocketStore, type SubscriptionInfo } from "@/stores/useStompSocketStore";
 import type { ChessParty, PlayerSide } from "@/types/ChessParty";
 import type { GameResult, MoveRequest } from "@/types/MoveRequest";
 import type { SocketMessage, SocketMessageType } from "@/types/Socket";
 import type { Key } from "chessground/types";
-import { readonly, ref, type Ref } from "vue";
-import type { BoardApi, MoveEvent, Promotion } from "vue3-chessboard";
+import { readonly, ref, shallowReactive, type Ref } from "vue";
+import type { BoardApi, CapturedPieces, MoveEvent, Promotion } from "vue3-chessboard";
 
 type MessageHandler = (message: SocketMessage) => void
 
 // 1. load game
 // 2 set board api
-export function useChessGame(gameId: number) {
+export function useChessGame() {
 
   const _stompStore = useStompSocketStore()
-  const _httpClient = useHttpClient()
   const _authStore = useAuthStore()
   let _boardApi: BoardApi
   let _chessParty: ChessParty
 
-  const takedPieceWhite = ref([]);
-  const takedPieceBlack = ref([]);
-  const moves = ref([])
-  const isLoaded = ref(false)
+  const gameId = ref(0)
+  const takedPieceWhite: Ref<string[]> = ref([]);
+  const takedPieceBlack: Ref<string[]> = ref([]);
+  const moves: Ref<string[]> = ref([])
   const playerSide: Ref<PlayerSide> = ref(undefined)
 
   const handlers: Record<SocketMessageType, MessageHandler> = {
@@ -50,7 +48,7 @@ export function useChessGame(gameId: number) {
   }
 
   function subscribe(): SubscriptionInfo | null {
-    return _stompStore.subscribe(`/game/${gameId}`, (msg) => {
+    return _stompStore.subscribe(`/game/${gameId.value}`, (msg) => {
       const message: SocketMessage = JSON.parse(msg.body)
       const messageType: SocketMessageType = message.headers['type'] as SocketMessageType
       handlers[messageType](message)
@@ -67,20 +65,41 @@ export function useChessGame(gameId: number) {
   }
 
   _updateHistory()
-    _stompStore.send(`/game/${gameId}`, JSON.stringify(moveRequest))
+    _stompStore.send(`/game/${gameId.value}`, JSON.stringify(moveRequest))
   }
 
-  async function loadGame(): Promise<void> {
-    _chessParty = await _httpClient.get(`api/v1/games/${gameId}`)
-    if(_chessParty.white == _authStore.getId()) playerSide.value = "white"
-    else if(_chessParty.black == _authStore.getId()) playerSide.value = "black"
-    isLoaded.value = true
+  function setChessParty(chessParty: ChessParty) {
+    if(chessParty.white == _authStore.getId()) playerSide.value = "white"
+    else if(chessParty.black == _authStore.getId()) playerSide.value = "black"
+    gameId.value = chessParty.id
+    _chessParty = chessParty
+    if(_boardApi) {
+      setPositionWhenSet()
+    }
   }
 
   function setBoardApi(api: BoardApi) {
     _boardApi = api
+    if(_chessParty) {
+      setPositionWhenSet()
+    }
+  }
+
+  function setPositionWhenSet() {
     _boardApi.loadPgn(_chessParty.moveUci.join(" "))
     _updateHistory()
+  }
+
+  const viewNext = () => {
+    _boardApi.viewNext()
+  }
+
+  const viewPrevious = () => {
+    _boardApi.viewPrevious()
+  }
+
+  const stopView = () => {
+    _boardApi.stopViewingHistory()
   }
 
   function _updateHistory() {
@@ -90,16 +109,19 @@ export function useChessGame(gameId: number) {
     takedPieceWhite.value = pieces.white;
   }
 
-  return {
+  return shallowReactive({
     sendMove,
     subscribe,
-    loadGame,
-    isLoaded: readonly(isLoaded),
+    setBoardApi,
     playerSide: readonly(playerSide),
+    gameId: readonly(gameId),
     takedPieceBlack,
     takedPieceWhite,
     moves,
-    setBoardApi
-  }
+    setChessParty,
+    viewNext,
+    viewPrevious,
+    stopView,
+  })
 }
 

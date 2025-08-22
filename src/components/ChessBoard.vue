@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { PlayerColor } from '@/types/ChessParty';
-import { BoardApi, TheChessboard, type BoardConfig, type MoveableColor, type MoveEvent } from 'vue3-chessboard'
+import { BoardApi, TheChessboard, type BoardConfig, type MoveEvent } from 'vue3-chessboard'
 import 'vue3-chessboard/style.css'
 
 interface Props {
@@ -17,8 +16,8 @@ const props = defineProps<Props>();
 <template>
   <TheChessboard
   reactive-config
-  :board-config="props.boardConfig"
   :player-color="props.playerColor"
+  :board-config="props.boardConfig"
   @board-created="props.boardCreated"
   @move="props.move"/>
 </template>
