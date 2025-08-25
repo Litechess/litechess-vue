@@ -8,6 +8,7 @@ import type { Component } from 'vue';
 const props = defineProps<{
   color: PlayerColor
   piece: string
+  size?: number
 }>();
 
 const pieceMap: Record<PieceType, Component>= {
@@ -23,7 +24,7 @@ const styleColor = props.color == "w" ? "#0a0a0a" : "#d9dede"
 </script>
 
 <template>
-  <n-icon size="18">
+  <n-icon :size="size ? size : 18">
     <component :is="pieceMap[props.piece as PieceType]"/>
   </n-icon>
 </template>

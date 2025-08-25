@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { NFlex, NTable } from 'naive-ui'
-import { computed } from 'vue';
+import { NFlex, NTable, NText } from 'naive-ui'
+import { computed, h, type VNode } from 'vue';
+import ImageText from './ImageText.vue';
+import PieceText from './PieceText.vue';
 
 interface Props {
   moves: string[]
@@ -19,6 +21,15 @@ const moveRows = computed(() => {
   return rows
 })
 
+function getMoveView(move: string): VNode {
+  if(move == null) return h(NText, { depth: 3 })
+  const firstLetter = move.charAt(0)
+  if(firstLetter == "O" || firstLetter.toUpperCase() != firstLetter) {
+    return h(ImageText, { text: move })
+  }
+  return h(PieceText, { text: move.slice(1), piece: firstLetter.toLowerCase(), size: 12 })
+}
+
 </script>
 
 <template>
@@ -27,8 +38,12 @@ const moveRows = computed(() => {
       <tbody>
         <tr v-for="(row) in moveRows" :key="row.moveNumber">
           <td style="width: 1.45em; line-height: 0.9">{{ row.moveNumber }}.</td>
-          <td class="rowElement" style="width: 4em">{{ row.white }}</td>
-          <td class="rowElement">{{ row.black }}</td>
+          <td class="rowElement" style="width: 4em">
+            <component :is="getMoveView(row.white)" />
+          </td>
+          <td class="rowElement">
+            <component :is="getMoveView(row.black)" />
+          </td>
         </tr>
       </tbody>
     </n-table>
@@ -38,6 +53,6 @@ const moveRows = computed(() => {
 <style scoped>
 .rowElement {
   font-weight: bold;
-  line-height: 0.9
+  line-height: 0.9;
 }
 </style>

@@ -3,11 +3,12 @@ import { NIcon } from 'naive-ui';
 
 const props = defineProps<{
   rotated?: boolean
+  size: number
 }>();
 </script>
 
 <template>
-  <n-icon>
+  <n-icon :size="size">
     <svg
       :style="props.rotated ? 'transform: rotate(180deg);' : ''"
       xmlns="http://www.w3.org/2000/svg"
