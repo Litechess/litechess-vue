@@ -2,8 +2,8 @@
 // TODO ONLY FOR DEV TESTING , DELETE FROM ROUTER TO
 import { NFlex, NCard, NTabs, NTabPane, NScrollbar, NText, NButton } from 'naive-ui'
 import PlayerBoardInfo from '@/components/PlayerBoardInfo.vue'
-import { ref, toRaw } from 'vue'
-import { TheChessboard, type BoardApi, type CapturedPieces, type MoveEvent } from 'vue3-chessboard'
+import { computed, nextTick, ref, toRaw, toRefs, watch } from 'vue'
+import { TheChessboard, type BoardApi, type CapturedPieces, type Move, type MoveEvent } from 'vue3-chessboard'
 import { h } from 'vue'
 import 'vue3-chessboard/style.css'
 import BoardTabPane from '@/components/ImageText.vue'
@@ -11,53 +11,106 @@ import MoveTable from '@/components/MoveTable.vue'
 import ChessBoard from '@/components/ChessBoard.vue'
 import { ArrowIcon, EqualIcon } from '@/components/icon'
 import PieceText from '@/components/PieceText.vue'
+import { useChessGame } from '@/composables/useChessGame'
+import GameTimer from '@/components/GameTimer.vue'
 
-const takedPieceWhite = ref([])
-const takedPieceBlack = ref([])
-const moves: Ref<string[]> = ref([])
+const chessGame = useChessGame()
+const { playerSide, moves, takedPieceWhite, takedPieceBlack, openingName, currentPly } = toRefs(chessGame)
 
 // composable
 let boardApi: BoardApi
-const openingName = ref('ㅤ')
-const boardConfig = {}
 const buttonSize: number = 35
-
+const activeTimerSide = computed(() => {
+  return playerSide.value == chessGame.currentTurn.value ? true : false
+})
+const scrollbarRef = ref(null)
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (scrollbarRef.value) {
+      const scrollbar = scrollbarRef.value
+      console.log(scrollbar)
+      // Прокручиваем к самому низу
+      scrollbar.scrollBy({
+        top: 1000,
+        behavior: 'smooth',
+      })
+    }
+  })
+}
+watch(
+  moves,
+  (newVal, oldVal) => {
+    if (newVal.length > oldVal.length) {
+      scrollToBottom()
+    }
+  },
+  { deep: true },
+)
 const piecePane = h(PieceText, {
   text: 'game',
-  piece: "p"
+  piece: 'p',
 })
 
-function onMove(move: MoveEvent) {
-  moves.value.push(move.san)
-  boardApi.getOpeningName().then((name) => {
-    if (openingName.value != name) openingName.value = name!
-  })
+const selectedMovePly = ref(currentPly.value.valueOf())
+watch(() => currentPly.value, (newValue) => {
+  selectedMovePly.value = newValue
+})
+
+function moveTableClick(ply: number) {
+  selectedMovePly.value = ply
+  boardApi.viewHistory(ply)
 }
 
 function onBoardCreated(api: BoardApi) {
   boardApi = api
+  chessGame.setBoardApi(api)
 }
 
-function test() {}
+const viewNext = () => {
+  if(selectedMovePly.value == moves.value.length) return
+  boardApi.viewNext()
+  selectedMovePly.value = selectedMovePly.value + 1
+}
+
+const viewPrevious = () => {
+  if(selectedMovePly.value == 1) return
+  boardApi.viewPrevious()
+  selectedMovePly.value = selectedMovePly.value + -1
+}
+
+const stopView = () => {
+  boardApi.stopViewingHistory()
+  selectedMovePly.value = currentPly.value
+}
 </script>
 
 <template>
   <n-flex style="height: calc(100dvh - 2rem)" justify="center" align="center">
     <n-flex :size="50" justify="center">
       <n-flex vertical>
-        <player-board-info
-          color="w"
-          name="Player2"
-          avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
-          :pieces="takedPieceBlack"
+        <n-flex justify="space-between">
+          <player-board-info
+            color="w"
+            name="Player2"
+            avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
+            :pieces="takedPieceBlack"
+          />
+          <game-timer :active="!activeTimerSide" :duration="100 * 100 * 60" />
+        </n-flex>
+        <chess-board
+          player-color="white"
+          @move="chessGame.moveHandler"
+          @board-created="onBoardCreated"
         />
-        <chess-board player-color="white" @move="onMove" @board-created="onBoardCreated" />
-        <player-board-info
-          color="w"
-          name="Player2"
-          avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
-          :pieces="takedPieceBlack"
-        />
+        <n-flex justify="space-between">
+          <player-board-info
+            color="w"
+            name="Player2"
+            avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
+            :pieces="takedPieceWhite"
+          />
+          <game-timer :active="activeTimerSide" :duration="100 * 100 * 60" />
+        </n-flex>
       </n-flex>
       <n-flex>
         <n-card>
@@ -65,17 +118,21 @@ function test() {}
             <n-tab-pane name="sosal1" :tab="piecePane">
               <n-flex vertical justify="space-between">
                 <n-text> {{ openingName }}</n-text>
-                <n-scrollbar style="max-height: 42em; min-height: 42em">
-                  <move-table :moves="moves" v-if="moves.length != 0" />
+                <n-scrollbar ref="scrollbarRef" style="max-height: 42em; min-height: 42em">
+                  <move-table
+                    :selectMovePly="selectedMovePly"
+                    :moves="moves"
+                    @move-click="moveTableClick"
+                    v-if="moves.length != 0" />
                 </n-scrollbar>
                 <n-flex justify="center" :size="5">
-                  <n-button>
-                    <arrow-icon :size="buttonSize"/>
+                  <n-button @click="viewPrevious">
+                    <arrow-icon :size="buttonSize" />
                   </n-button>
-                  <n-button @click="test">
-                    <equal-icon :size="buttonSize"/>
+                  <n-button @click="stopView">
+                    <equal-icon :size="buttonSize" />
                   </n-button>
-                  <n-button>
+                  <n-button @click="viewNext">
                     <arrow-icon :size="buttonSize" rotated />
                   </n-button>
                 </n-flex>

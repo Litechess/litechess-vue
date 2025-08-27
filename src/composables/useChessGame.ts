@@ -5,7 +5,7 @@ import type { GameResult, MoveRequest } from "@/types/MoveRequest";
 import type { SocketMessage, SocketMessageType } from "@/types/Socket";
 import type { Key } from "chessground/types";
 import { readonly, ref, shallowReactive, type Ref } from "vue";
-import type { BoardApi, CapturedPieces, MoveEvent, Promotion } from "vue3-chessboard";
+import { BoardApi, type CapturedPieces, type MoveEvent, type Promotion } from "vue3-chessboard";
 
 type MessageHandler = (message: SocketMessage) => void
 
@@ -22,7 +22,10 @@ export function useChessGame() {
   const takedPieceWhite: Ref<string[]> = ref([]);
   const takedPieceBlack: Ref<string[]> = ref([]);
   const moves: Ref<string[]> = ref([])
-  const playerSide: Ref<PlayerSide> = ref(undefined)
+  const openingName = ref('ㅤ')
+  const playerSide: Ref<PlayerSide> = ref("white")
+  const currentTurn: Ref<PlayerSide> = ref("white")
+  const currentPly: Ref<number> = ref(1)
 
   const handlers: Record<SocketMessageType, MessageHandler> = {
     "move": (message) => {
@@ -55,8 +58,9 @@ export function useChessGame() {
     })
   }
 
-  function sendMove(move: MoveEvent): void {
-  if (_boardApi!.getTurnColor() == playerSide.value) return
+  function moveHandler(move: MoveEvent): void {
+  _updateHistory()
+  if (!_chessParty || _boardApi!.getTurnColor() == playerSide.value) return
   const moveRequest: MoveRequest = {
     from: move.from,
     to: move.to,
@@ -64,7 +68,6 @@ export function useChessGame() {
     san: move.san,
   }
 
-  _updateHistory()
     _stompStore.send(`/game/${gameId.value}`, JSON.stringify(moveRequest))
   }
 
@@ -107,10 +110,18 @@ export function useChessGame() {
     const pieces: CapturedPieces = _boardApi.getCapturedPieces();
     takedPieceBlack.value = pieces.black;
     takedPieceWhite.value = pieces.white;
+    currentTurn.value = _boardApi!.getTurnColor()
+    _boardApi.getOpeningName().then((name) => {
+      if (openingName.value != name) openingName.value = name!
+    })
+    currentPly.value = _boardApi.getCurrentPlyNumber()
   }
 
   return shallowReactive({
-    sendMove,
+    openingName: readonly(openingName),
+    currentTurn: readonly(currentTurn),
+    currentPly: readonly(currentPly),
+    moveHandler,
     subscribe,
     setBoardApi,
     playerSide: readonly(playerSide),
