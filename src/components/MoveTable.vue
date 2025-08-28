@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { NFlex, NTable, NText } from 'naive-ui'
-import { computed, h, ref, type VNode } from 'vue'
+import { NFlex, NTable, NText, NScrollbar } from 'naive-ui'
+import { computed, h, nextTick, ref, toRefs, watch, type VNode } from 'vue'
 import ImageText from './ImageText.vue'
 import PieceText from './PieceText.vue'
 
@@ -10,6 +10,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { moves } = toRefs(props)
 const emit = defineEmits<{(e: 'moveClick', ply: number): void}>()
 const moveRows = computed(() => {
   const rows = []
@@ -25,11 +26,36 @@ const moveRows = computed(() => {
   return rows
 })
 
+const scrollbarRef = ref(null)
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (scrollbarRef.value) {
+      const scrollbar: typeof NScrollbar = scrollbarRef.value
+      console.log(scrollbar)
+      // Прокручиваем к самому низу
+      scrollbar.scrollBy({
+        top: 1000,
+        behavior: 'smooth',
+      })
+    }
+  })
+}
+
+watch(
+  moves,
+  (newVal, oldVal) => {
+    if (newVal.length > oldVal.length) {
+      scrollToBottom()
+    }
+  },
+  { deep: true },
+)
+
 function onMoveClick(moveIndex: number) {
   emit('moveClick', moveIndex + 1)
 }
 
-function getMoveView(move: string): VNode {
+function getMoveView(move: string | null): VNode {
   if (move == null) return h(NText, { depth: 3 })
   const firstLetter = move.charAt(0)
   if (firstLetter == 'O' || firstLetter.toUpperCase() != firstLetter) {
@@ -40,8 +66,8 @@ function getMoveView(move: string): VNode {
 </script>
 
 <template>
-  <n-flex>
-    <n-table :striped="true" size="large">
+  <n-scrollbar ref="scrollbarRef" style="max-height: 42em; min-height: 42em">
+    <n-table :striped="true" size="large" v-if ="moveRows.length > 0">
       <tbody>
         <tr v-for="row in moveRows" :key="row.moveNumber">
           <td style="width: 1.45em; line-height: 0.9">{{ row.moveNumber }}.</td>
@@ -70,7 +96,7 @@ function getMoveView(move: string): VNode {
         </tr>
       </tbody>
     </n-table>
-  </n-flex>
+  </n-scrollbar>
 </template>
 
 <style scoped>

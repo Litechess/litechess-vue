@@ -1,12 +1,11 @@
 <script setup lang="ts">
 // TODO ONLY FOR DEV TESTING , DELETE FROM ROUTER TO
-import { NFlex, NCard, NTabs, NTabPane, NScrollbar, NText, NButton } from 'naive-ui'
+import { NFlex, NCard, NTabs, NTabPane, NText, NButton } from 'naive-ui'
 import PlayerBoardInfo from '@/components/PlayerBoardInfo.vue'
-import { computed, nextTick, ref, toRaw, toRefs, watch } from 'vue'
-import { TheChessboard, type BoardApi, type CapturedPieces, type Move, type MoveEvent } from 'vue3-chessboard'
+import { computed, ref, toRefs, watch } from 'vue'
+import { type BoardApi, } from 'vue3-chessboard'
 import { h } from 'vue'
 import 'vue3-chessboard/style.css'
-import BoardTabPane from '@/components/ImageText.vue'
 import MoveTable from '@/components/MoveTable.vue'
 import ChessBoard from '@/components/ChessBoard.vue'
 import { ArrowIcon, EqualIcon } from '@/components/icon'
@@ -23,29 +22,7 @@ const buttonSize: number = 35
 const activeTimerSide = computed(() => {
   return playerSide.value == chessGame.currentTurn.value ? true : false
 })
-const scrollbarRef = ref(null)
-const scrollToBottom = () => {
-  nextTick(() => {
-    if (scrollbarRef.value) {
-      const scrollbar = scrollbarRef.value
-      console.log(scrollbar)
-      // Прокручиваем к самому низу
-      scrollbar.scrollBy({
-        top: 1000,
-        behavior: 'smooth',
-      })
-    }
-  })
-}
-watch(
-  moves,
-  (newVal, oldVal) => {
-    if (newVal.length > oldVal.length) {
-      scrollToBottom()
-    }
-  },
-  { deep: true },
-)
+
 const piecePane = h(PieceText, {
   text: 'game',
   piece: 'p',
@@ -115,16 +92,14 @@ const stopView = () => {
       <n-flex>
         <n-card>
           <n-tabs style="width: 400px" type="line" animated justify-content="center" size="large">
-            <n-tab-pane name="sosal1" :tab="piecePane">
+            <n-tab-pane name="gamePanel" :tab="piecePane">
               <n-flex vertical justify="space-between">
                 <n-text> {{ openingName }}</n-text>
-                <n-scrollbar ref="scrollbarRef" style="max-height: 42em; min-height: 42em">
                   <move-table
                     :selectMovePly="selectedMovePly"
                     :moves="moves"
                     @move-click="moveTableClick"
-                    v-if="moves.length != 0" />
-                </n-scrollbar>
+                    />
                 <n-flex justify="center" :size="5">
                   <n-button @click="viewPrevious">
                     <arrow-icon :size="buttonSize" />
