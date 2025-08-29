@@ -31,8 +31,6 @@ const scrollToBottom = () => {
   nextTick(() => {
     if (scrollbarRef.value) {
       const scrollbar: typeof NScrollbar = scrollbarRef.value
-      console.log(scrollbar)
-      // Прокручиваем к самому низу
       scrollbar.scrollBy({
         top: 1000,
         behavior: 'smooth',
@@ -71,7 +69,7 @@ function getMoveView(move: string | null): VNode {
       <tbody>
         <tr v-for="row in moveRows" :key="row.moveNumber">
           <td style="width: 1.45em; line-height: 0.9">{{ row.moveNumber }}.</td>
-          <td class="rowElement" style="width: 4em">
+          <td class="rowElement" style="width: 4.2em">
             <n-flex
               :class="{ highlighted: row.whiteIndex == props.selectMovePly - 1 }"
               :size="2"

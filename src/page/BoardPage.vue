@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { reactive, ref, toRefs } from 'vue'
-
-import { useRoute } from 'vue-router'
-import { BoardApi, type BoardConfig } from 'vue3-chessboard'
-import 'vue3-chessboard/style.css'
-import { NFlex, NCard,  NButton, NScrollbar } from 'naive-ui'
-import ChessBoard from '@/components/ChessBoard.vue'
+// TODO ONLY FOR DEV TESTING , DELETE FROM ROUTER TO
+import { NFlex, NCard, NTabs, NTabPane, NText, NButton } from 'naive-ui'
 import PlayerBoardInfo from '@/components/PlayerBoardInfo.vue'
-import GameTimer from '@/components/GameTimer.vue'
-import { ArrowIcon, EqualIcon } from '@/components/icon'
+import { computed, reactive, ref, toRefs, watch } from 'vue'
+import { type BoardApi, type BoardConfig, type MoveEvent, } from 'vue3-chessboard'
+import { h } from 'vue'
+import 'vue3-chessboard/style.css'
 import MoveTable from '@/components/MoveTable.vue'
+import ChessBoard from '@/components/ChessBoard.vue'
+import { ArrowIcon, EqualIcon } from '@/components/icon'
+import PieceText from '@/components/PieceText.vue'
 import { useChessGame } from '@/composables/useChessGame'
+import GameTimer from '@/components/GameTimer.vue'
 import { useApi } from '@/composables/useApi'
 import type { ChessParty } from '@/types/ChessParty'
+import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const gameId: number = Number(route.params.gameId)
-
-const chessGame = useChessGame()
 const api = useApi()
-const isLoaded = ref(false)
-const { playerSide, moves, takedPieceWhite, takedPieceBlack } = toRefs(chessGame)
+const chessGame = useChessGame()
+const gameId: number = Number(route.params.gameId)
 const boardConfig: BoardConfig = reactive({})
+const isLoaded = ref(false)
 
 api.getChessGame(gameId).then( (result: ChessParty) => {
   chessGame.setChessParty(result)
@@ -30,59 +30,119 @@ api.getChessGame(gameId).then( (result: ChessParty) => {
   isLoaded.value = true
 })
 
-async function boardCreated(api: BoardApi) {
+const { playerSide, moves, takedPieceWhite, takedPieceBlack, openingName, currentPly, materialDiff } = toRefs(chessGame)
+
+// composable
+let boardApi: BoardApi
+const buttonSize: number = 35
+const activeTimerSide = computed(() => {
+  return playerSide.value == chessGame.currentTurn.value ? true : false
+})
+
+const piecePane = h(PieceText, {
+  text: 'game',
+  piece: 'p',
+})
+
+const selectedMovePly = ref(currentPly.value.valueOf())
+watch(() => currentPly.value, (newValue) => {
+  selectedMovePly.value = newValue
+})
+
+function moveTableClick(ply: number) {
+  selectedMovePly.value = ply
+  boardApi.viewHistory(ply)
+}
+
+function onBoardCreated(api: BoardApi) {
+  boardApi = api
   chessGame.setBoardApi(api)
   chessGame.subscribe()
 }
 
-function test() {
-  boardConfig.viewOnly = false
+function onMove(move: MoveEvent) {
+  boardApi.stopViewingHistory()
+  chessGame.moveHandler(move)
 }
 
+const viewNext = () => {
+  if(selectedMovePly.value == moves.value.length) return
+  boardApi.viewNext()
+  selectedMovePly.value = selectedMovePly.value + 1
+}
+
+const viewPrevious = () => {
+  if(selectedMovePly.value == 1) return
+  boardApi.viewPrevious()
+  selectedMovePly.value = selectedMovePly.value + -1
+}
+
+const stopView = () => {
+  boardApi.stopViewingHistory()
+  selectedMovePly.value = currentPly.value
+}
 </script>
+
 <template>
-  <n-flex justify="center" align="center" style="height: 100vh; width: 100vw">
-    <n-flex style="width: 80%; height: 90%;" justify="center" align="center">
-      <n-flex style="height: 100%;" vertical :size="15 " v-if="isLoaded">
+  <n-flex style="height: calc(100dvh - 2rem)" justify="center" align="center">
+    <n-flex :size="50" justify="center" v-if="isLoaded">
+      <n-flex vertical>
         <n-flex justify="space-between">
           <player-board-info
-            color = "b"
-            name="Player1"
-            avatar="https://gw.alipayobjects.com/zos/antfincdn/aPkFc8Sj7n/method-draw-image.svg"
-            :pieces="takedPieceWhite"
-          />
-          <game-timer/>
-        </n-flex>
-        <chess-board :board-created="boardCreated" :player-color="playerSide" :move="chessGame.sendMove" :board-config="boardConfig"/>
-        <n-flex justify="space-between">
-          <player-board-info
-            color = "w"
+            color="black"
             name="Player2"
             avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
             :pieces="takedPieceBlack"
+            :materialDiff="materialDiff"
           />
-          <game-timer/>
+          <game-timer :active="!activeTimerSide" :duration="100 * 100 * 60" />
+        </n-flex>
+        <chess-board
+          player-color="white"
+          :board-config="boardConfig"
+          @move="onMove"
+          @board-created="onBoardCreated"
+        />
+        <n-flex justify="space-between">
+          <player-board-info
+            color="white"
+            name="Player2"
+            avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
+            :pieces="takedPieceWhite"
+            :materialDiff="materialDiff"
+          />
+          <game-timer :active="activeTimerSide" :duration="100 * 100 * 60" />
         </n-flex>
       </n-flex>
-      <n-flex style="height: 100%; width: 30%">
+      <n-flex>
         <n-card>
-          <n-scrollbar style="max-height: 45em">
-            <move-table :moves="moves" v-if="moves.length != 0"/>
-           </n-scrollbar>
-           <n-button @click="chessGame.viewPrevious">
-            <arrow-icon/>
-           </n-button>
-           <n-button @click="chessGame.viewNext">
-            <equal-icon/>
-           </n-button>
-           <n-button @click="chessGame.stopView">
-            <arrow-icon rotated/>
-           </n-button>
-            <router-link to="/">/home</router-link>
-            <router-link to="/play">/play</router-link>
-            <n-button @click="test">test</n-button>
+          <n-tabs style="width: 400px" type="line" animated justify-content="center" size="large">
+            <n-tab-pane name="gamePanel" :tab="piecePane">
+              <n-flex vertical justify="space-between">
+                <n-text> {{ openingName }}</n-text>
+                  <move-table
+                    :selectMovePly="selectedMovePly"
+                    :moves="moves"
+                    @move-click="moveTableClick"
+                    />
+                <n-flex justify="center" :size="5">
+                  <n-button @click="viewPrevious">
+                    <arrow-icon :size="buttonSize" />
+                  </n-button>
+                  <n-button @click="stopView">
+                    <equal-icon :size="buttonSize" />
+                  </n-button>
+                  <n-button @click="viewNext">
+                    <arrow-icon :size="buttonSize" rotated />
+                  </n-button>
+                </n-flex>
+              </n-flex>
+            </n-tab-pane>
+          </n-tabs>
         </n-card>
       </n-flex>
     </n-flex>
   </n-flex>
 </template>
+
+<style scoped></style>

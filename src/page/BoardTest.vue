@@ -2,8 +2,8 @@
 // TODO ONLY FOR DEV TESTING , DELETE FROM ROUTER TO
 import { NFlex, NCard, NTabs, NTabPane, NText, NButton } from 'naive-ui'
 import PlayerBoardInfo from '@/components/PlayerBoardInfo.vue'
-import { computed, ref, toRefs, watch } from 'vue'
-import { type BoardApi, } from 'vue3-chessboard'
+import { computed, reactive, ref, toRefs, watch } from 'vue'
+import { type BoardApi, type BoardConfig, } from 'vue3-chessboard'
 import { h } from 'vue'
 import 'vue3-chessboard/style.css'
 import MoveTable from '@/components/MoveTable.vue'
@@ -12,9 +12,25 @@ import { ArrowIcon, EqualIcon } from '@/components/icon'
 import PieceText from '@/components/PieceText.vue'
 import { useChessGame } from '@/composables/useChessGame'
 import GameTimer from '@/components/GameTimer.vue'
+import { useApi } from '@/composables/useApi'
+import type { ChessParty } from '@/types/ChessParty'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
+const api = useApi()
 const chessGame = useChessGame()
-const { playerSide, moves, takedPieceWhite, takedPieceBlack, openingName, currentPly } = toRefs(chessGame)
+const gameId: number = Number(route.params.gameId)
+const boardConfig: BoardConfig = reactive({})
+const isLoaded = ref(false)
+
+api.getChessGame(gameId).then( (result: ChessParty) => {
+  chessGame.setChessParty(result)
+  boardConfig.orientation = playerSide.value
+  boardConfig.viewOnly = playerSide.value == undefined ? true : false
+  isLoaded.value = true
+})
+
+const { playerSide, moves, takedPieceWhite, takedPieceBlack, openingName, currentPly, materialDiff } = toRefs(chessGame)
 
 // composable
 let boardApi: BoardApi
@@ -41,6 +57,7 @@ function moveTableClick(ply: number) {
 function onBoardCreated(api: BoardApi) {
   boardApi = api
   chessGame.setBoardApi(api)
+  chessGame.subscribe()
 }
 
 const viewNext = () => {
@@ -63,28 +80,31 @@ const stopView = () => {
 
 <template>
   <n-flex style="height: calc(100dvh - 2rem)" justify="center" align="center">
-    <n-flex :size="50" justify="center">
+    <n-flex :size="50" justify="center" v-if="isLoaded">
       <n-flex vertical>
         <n-flex justify="space-between">
           <player-board-info
-            color="w"
+            color="black"
             name="Player2"
             avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
             :pieces="takedPieceBlack"
+            :materialDiff="materialDiff"
           />
           <game-timer :active="!activeTimerSide" :duration="100 * 100 * 60" />
         </n-flex>
-        <chess-board
+        <chess-board"
           player-color="white"
+          :board-config="boardConfig"
           @move="chessGame.moveHandler"
           @board-created="onBoardCreated"
         />
         <n-flex justify="space-between">
           <player-board-info
-            color="w"
+            color="white"
             name="Player2"
             avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
             :pieces="takedPieceWhite"
+            :materialDiff="materialDiff"
           />
           <game-timer :active="activeTimerSide" :duration="100 * 100 * 60" />
         </n-flex>
