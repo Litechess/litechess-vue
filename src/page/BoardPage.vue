@@ -22,15 +22,21 @@ const chessGame = useChessGame()
 const gameId: number = Number(route.params.gameId)
 const boardConfig: BoardConfig = reactive({})
 const isLoaded = ref(false)
+const playerWhiteName = ref("Player 1")
+const playerBlackName = ref("Player 2")
 
 api.getChessGame(gameId).then( (result: ChessParty) => {
   chessGame.setChessParty(result)
+  console.log(result)
   boardConfig.orientation = playerSide.value
   boardConfig.viewOnly = playerSide.value == undefined ? true : false
   isLoaded.value = true
+  playerWhiteName.value = result.white.name
+  playerBlackName.value = result.black.name
 })
 
 const { playerSide, moves, takedPieceWhite, takedPieceBlack, openingName, currentPly, materialDiff } = toRefs(chessGame)
+
 
 // composable
 let boardApi: BoardApi
@@ -86,11 +92,11 @@ const stopView = () => {
 <template>
   <n-flex style="height: calc(100dvh - 2rem)" justify="center" align="center">
     <n-flex :size="50" justify="center" v-if="isLoaded">
-      <n-flex vertical>
+      <n-flex :style="{ flexDirection: playerSide == 'white' ? 'column' : 'column-reverse' }">
         <n-flex justify="space-between">
           <player-board-info
             color="black"
-            name="Player2"
+            :name="playerBlackName"
             avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
             :pieces="takedPieceBlack"
             :materialDiff="materialDiff"
@@ -106,7 +112,7 @@ const stopView = () => {
         <n-flex justify="space-between">
           <player-board-info
             color="white"
-            name="Player2"
+            :name="playerWhiteName"
             avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
             :pieces="takedPieceWhite"
             :materialDiff="materialDiff"
@@ -120,11 +126,11 @@ const stopView = () => {
             <n-tab-pane name="gamePanel" :tab="piecePane">
               <n-flex vertical justify="space-between">
                 <n-text> {{ openingName }}</n-text>
-                  <move-table
-                    :selectMovePly="selectedMovePly"
-                    :moves="moves"
-                    @move-click="moveTableClick"
-                    />
+                <move-table
+                  :selectMovePly="selectedMovePly"
+                  :moves="moves"
+                  @move-click="moveTableClick"
+                />
                 <n-flex justify="center" :size="5">
                   <n-button @click="viewPrevious">
                     <arrow-icon :size="buttonSize" />

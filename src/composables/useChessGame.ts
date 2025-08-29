@@ -71,8 +71,8 @@ export function useChessGame() {
   }
 
   function setChessParty(chessParty: ChessParty) {
-    if (chessParty.white == _authStore.getId()) playerSide.value = 'white'
-    else if (chessParty.black == _authStore.getId()) playerSide.value = 'black'
+    if (chessParty.white.id == _authStore.getId()) playerSide.value = 'white'
+    else if (chessParty.black.id == _authStore.getId()) playerSide.value = 'black'
     gameId.value = chessParty.id
     _chessParty = chessParty
     if (_boardApi) {

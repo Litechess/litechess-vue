@@ -1,7 +1,7 @@
 export type ChessParty = {
   id: number
-  white: string
-  black: string
+  white: PlayerInfo
+  black: PlayerInfo
   moveUci: string[],
   fen: string,
   initFen: string,
@@ -9,6 +9,10 @@ export type ChessParty = {
 
 }
 
+export type PlayerInfo = {
+  id: string,
+  name: string
+}
 export type PlayerSide = "white" | "black" | undefined
 export type GameStatus = "DRAW" | "WIN_WHITE" | "WIN_BLACK" | "NOT_FINISHED"
 export type PieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
