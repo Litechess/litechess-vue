@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PlayerSide } from '@/types/ChessParty';
 import { NFlex, NCountdown, type CountdownProps } from 'naive-ui'
-import { h, toRef } from 'vue';
+import { h } from 'vue';
 
 interface Props {
   duration?: number

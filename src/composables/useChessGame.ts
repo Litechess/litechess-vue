@@ -14,18 +14,19 @@ type MessageHandler = (message: SocketMessage) => void
 export function useChessGame() {
   const _stompStore = useStompSocketStore()
   const _authStore = useAuthStore()
-  let _boardApi: BoardApi
-  let _chessParty: ChessParty
+  let _boardApi: BoardApi | null
+  let _chessParty: ChessParty | null
 
   const gameId = ref(0)
   const takedPieceWhite: Ref<string[]> = ref([])
   const takedPieceBlack: Ref<string[]> = ref([])
   const moves: Ref<string[]> = ref([])
   const openingName = ref('ㅤ')
-  const playerSide: Ref<PlayerSide> = ref('white')
+  const playerSide: Ref<PlayerSide> = ref(undefined)
   const currentTurn: Ref<PlayerSide> = ref('white')
   const currentPly: Ref<number> = ref(1)
   const materialDiff: Ref<number> = ref(0)
+  const isChessPartyLoaded = ref(false)
 
   const handlers: Record<SocketMessageType, MessageHandler> = {
     move: (message) => {
@@ -70,7 +71,12 @@ export function useChessGame() {
     _stompStore.send(`/game/${gameId.value}`, JSON.stringify(moveRequest))
   }
 
-  function setChessParty(chessParty: ChessParty) {
+  function setChessParty(chessParty: ChessParty | null) {
+    if(chessParty == null) {
+      _resetData()
+      _chessParty = null
+      return
+    }
     if (chessParty.white.id == _authStore.getId()) playerSide.value = 'white'
     else if (chessParty.black.id == _authStore.getId()) playerSide.value = 'black'
     gameId.value = chessParty.id
@@ -80,7 +86,7 @@ export function useChessGame() {
     }
   }
 
-  function setBoardApi(api: BoardApi) {
+  function setBoardApi(api: BoardApi | null) {
     _boardApi = api
     if (_chessParty) {
       setPositionWhenSet()
@@ -88,11 +94,18 @@ export function useChessGame() {
   }
 
   function setPositionWhenSet() {
+    if(_boardApi == null || _chessParty == null) {
+      return
+    }
     _boardApi.loadPgn(_chessParty.moveUci.join(' '))
     _updateHistory()
   }
 
   function _updateHistory() {
+    if(_boardApi == null) {
+      return
+    }
+
     moves.value = _boardApi.getHistory()
     const pieces: CapturedPieces = _boardApi.getCapturedPieces()
     takedPieceBlack.value = pieces.black
@@ -105,6 +118,15 @@ export function useChessGame() {
     materialDiff.value = _boardApi.getMaterialCount().materialDiff
   }
 
+  function _resetData() {
+    openingName.value = "ㅤ"
+    currentTurn.value = "white"
+    currentPly.value = 1
+    materialDiff.value = 0
+    playerSide.value = undefined
+    gameId.value = 0
+  }
+
   return shallowReactive({
     openingName: readonly(openingName),
     currentTurn: readonly(currentTurn),
@@ -112,6 +134,8 @@ export function useChessGame() {
     materialDiff: readonly(materialDiff),
     playerSide: readonly(playerSide),
     gameId: readonly(gameId),
+    isChessPartyLoaded: readonly(isChessPartyLoaded),
+
     moveHandler,
     subscribe,
     setBoardApi,

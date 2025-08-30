@@ -33,6 +33,7 @@ api.getChessGame(gameId).then( (result: ChessParty) => {
   isLoaded.value = true
   playerWhiteName.value = result.white.name
   playerBlackName.value = result.black.name
+  chessGame.subscribe()
 })
 
 const { playerSide, moves, takedPieceWhite, takedPieceBlack, openingName, currentPly, materialDiff } = toRefs(chessGame)
@@ -63,7 +64,6 @@ function moveTableClick(ply: number) {
 function onBoardCreated(api: BoardApi) {
   boardApi = api
   chessGame.setBoardApi(api)
-  chessGame.subscribe()
 }
 
 function onMove(move: MoveEvent) {
@@ -87,6 +87,7 @@ const stopView = () => {
   boardApi.stopViewingHistory()
   selectedMovePly.value = currentPly.value
 }
+
 </script>
 
 <template>
@@ -104,7 +105,7 @@ const stopView = () => {
           <game-timer :active="!activeTimerSide" :duration="100 * 100 * 60" />
         </n-flex>
         <chess-board
-          player-color="white"
+          :player-color="playerSide"
           :board-config="boardConfig"
           @move="onMove"
           @board-created="onBoardCreated"

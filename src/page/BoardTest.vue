@@ -92,7 +92,7 @@ const stopView = () => {
           />
           <game-timer :active="!activeTimerSide" :duration="100 * 100 * 60" />
         </n-flex>
-        <chess-board"
+        <chess-board
           player-color="white"
           :board-config="boardConfig"
           @move="chessGame.moveHandler"
