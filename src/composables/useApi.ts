@@ -1,6 +1,5 @@
 import { useHttpClient } from "@/stores/useHttpClient";
 import type { ChessParty } from "@/types/ChessParty";
-import type { ShortChessParty } from "@/types/ShortChessParty";
 
 export function useApi() {
 
@@ -10,7 +9,7 @@ export function useApi() {
     return _httpClient.get(`api/v1/games/${gameId}`)
   }
 
-  async function getAllGames(): Promise<ShortChessParty[]> {
+  async function getAllGames(): Promise<ChessParty[]> {
     return _httpClient.get(`api/v1/games/shortParty`)
   }
 

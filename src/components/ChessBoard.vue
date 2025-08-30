@@ -5,7 +5,7 @@ import 'vue3-chessboard/style.css'
 
 interface Props {
   boardCreated?: (api: BoardApi) => void
-  playerColor: "white" | "black" | undefined
+  playerColor?: "white" | "black" | undefined
   move?: (move: MoveEvent) => void
   boardConfig?: BoardConfig
 }

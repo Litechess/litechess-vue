@@ -18,18 +18,12 @@ const router = createRouter({
       component: HomePage
     },
     {
-      path: '/play',
-      name: 'play',
-      component: PlayPage,
-      meta: { requiresAuth: true }
-    },
-    {
       path: '/auth/login-callback',
       name: 'loginCallback',
       component: LoginCallbackAuthPage
     },
     {
-      path: '/:gameId',
+      path: '/game/:gameId?',
       name: 'board',
       component: BoardPage,
       meta: { requiresAuth: true }

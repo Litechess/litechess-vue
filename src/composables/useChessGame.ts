@@ -26,7 +26,6 @@ export function useChessGame() {
   const currentTurn: Ref<PlayerSide> = ref('white')
   const currentPly: Ref<number> = ref(1)
   const materialDiff: Ref<number> = ref(0)
-  const isChessPartyLoaded = ref(false)
 
   const handlers: Record<SocketMessageType, MessageHandler> = {
     move: (message) => {
@@ -134,7 +133,6 @@ export function useChessGame() {
     materialDiff: readonly(materialDiff),
     playerSide: readonly(playerSide),
     gameId: readonly(gameId),
-    isChessPartyLoaded: readonly(isChessPartyLoaded),
 
     moveHandler,
     subscribe,
