@@ -1,4 +1,5 @@
 import { useStompSocketStore, type SubscriptionInfo } from "@/stores/useStompSocketStore"
+import { readonly, ref, shallowReactive } from "vue"
 import { useRouter } from "vue-router"
 
 const DUMMY_CREATE_REQUIEST = {
@@ -11,22 +12,35 @@ increment: 0
 export function useMatchQueue() {
 
   const _stompStore = useStompSocketStore()
-  const _router = useRouter()
+  let _findSubInfo: SubscriptionInfo | null = null
 
-  function enterInQueue(): SubscriptionInfo | null {
-    const subInfo: SubscriptionInfo | null =  _stompStore.subscribe(`/matchmaking/queue`, (msg) => {
+  const inQueue = ref(false)
+
+  function enterInQueue(gameFindedCallback: (gameId: number) => void): void {
+    if(inQueue.value) return
+    _findSubInfo =  _stompStore.subscribe(`/matchmaking/queue`, (msg) => {
       console.log("GAME FINDED")
       const gameId = JSON.parse(msg.body).payload.gameId as number
-      _router.push(`/${gameId}`)
+      gameFindedCallback(gameId)
+      inQueue.value = false
+
     }, true)
+    if(_findSubInfo == null) return
     _stompStore.send("/matchmaking/queue", JSON.stringify(DUMMY_CREATE_REQUIEST))
-    return subInfo;
+    inQueue.value = true
   }
 
-  return {
-    enterInQueue
+  function leaveFromQueue() {
+    if(inQueue.value == false) return
+    _findSubInfo?.unsubscribe()
+    inQueue.value = false
   }
 
+  return shallowReactive({
+    enterInQueue,
+    leaveFromQueue,
+    inQueue: readonly(inQueue)
+  })
 }
 
 

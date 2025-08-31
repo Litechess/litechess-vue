@@ -24,7 +24,7 @@ const router = createRouter({
     },
     {
       path: '/game/:gameId?',
-      name: 'board',
+      name: 'play',
       component: BoardPage,
       meta: { requiresAuth: true }
     },

@@ -18,20 +18,22 @@ import { onBeforeRouteUpdate, useRoute } from 'vue-router'
 import { RouterLink } from 'vue-router'
 import GameCard from '@/components/GameCard.vue'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useMatchQueue } from '@/composables/useMatchQueue'
+import FindGameButton from '@/components/FindGameButton.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
 const api = useApi()
 const chessGame = useChessGame()
-const gameIdParam: number = Number(route.params.gameId == typeof NaN ? 0 : route.params.gameId)
+const gameIdParam: Ref<number> = ref(Number(route.params.gameId == typeof NaN ? 0 : route.params.gameId))
 const boardConfig: BoardConfig = reactive({})
 const isChessPartyLoaded = ref(false)
 const playerWhiteName = ref('Player 1')
 const playerBlackName = ref('Player 2')
 const activeGames: Ref<ChessParty[]> = ref([])
 
-if (gameIdParam !== 0) {
-  loadGame(gameIdParam)
+if (gameIdParam.value !== 0) {
+  loadGame(gameIdParam.value)
 }
 api.getAllGames().then((result: ChessParty[]) => {
   activeGames.value = result
@@ -52,8 +54,14 @@ function loadGame(id: number) {
 
 onBeforeRouteUpdate((to, from, next) => {
   const paramId: string = to.params.gameId as string
-  if (paramId.length > 0) loadGame(Number(paramId))
-  else isChessPartyLoaded.value = false
+  if (paramId.length > 0) {
+    loadGame(Number(paramId))
+    gameIdParam.value = Number(paramId)
+  }
+  else  {
+    isChessPartyLoaded.value = false
+  }
+
   next()
 })
 
@@ -96,6 +104,7 @@ function moveTableClick(ply: number) {
 }
 
 function onBoardCreated(api: BoardApi) {
+  console.log("SOSAL GODNO")
   boardApi = api
   chessGame.setBoardApi(api)
   chessGame.subscribe()
@@ -150,6 +159,7 @@ const stopView = () => {
           :board-config="boardConfig"
           @move="onMove"
           @board-created="onBoardCreated"
+          :key="gameIdParam"
         />
         <chess-board v-else :board-config="notLoadedBoardConfig" />
 
@@ -190,7 +200,7 @@ const stopView = () => {
             </n-tab-pane>
             <n-tab-pane name="matchmaking" tab="Matchmaking" display-directive="show:lazy">
               <n-flex vertical :size="30">
-                <n-button type="primary" size="large" style="font-size: 20px">FIND GAME</n-button>
+                <find-game-button />
                 <n-flex vertical align="center">
                   <n-text style="font-size: 18px">Active games</n-text>
                   <n-scrollbar style="max-height: 42em; min-height: 42em">

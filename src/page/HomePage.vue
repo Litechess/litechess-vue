@@ -31,7 +31,7 @@ function logout() {
       <button @click="logout" v-if="user" style="margin-top: 1rem;">
         🚪 Выйти
       </button><br>
-      <router-link to="/play">/play</router-link>
+      <router-link to="/game">/play</router-link>
     </div>
   </div>
 </template>
