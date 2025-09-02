@@ -16,12 +16,13 @@ export function useChessGame() {
   const _authStore = useAuthStore()
   let _boardApi: BoardApi | null
   let _chessParty: ChessParty | null
+  let _currentSubscription: SubscriptionInfo | null = null
 
   const gameId = ref(0)
   const takedPieceWhite: Ref<string[]> = ref([])
   const takedPieceBlack: Ref<string[]> = ref([])
   const moves: Ref<string[]> = ref([])
-  const openingName = ref('ㅤ')
+  const openingName = ref("Start position")
   const playerSide: Ref<PlayerSide> = ref(undefined)
   const currentTurn: Ref<PlayerSide> = ref('white')
   const currentPly: Ref<number> = ref(1)
@@ -49,8 +50,12 @@ export function useChessGame() {
     },
   }
 
-  function subscribe(): SubscriptionInfo | null {
-    return _stompStore.subscribe(`/game/${gameId.value}`, (msg) => {
+  function subscribe(): void {
+    if(_currentSubscription != null) {
+      _currentSubscription.unsubscribe()
+    }
+
+    _currentSubscription = _stompStore.subscribe(`/game/${gameId.value}`, (msg) => {
       const message: SocketMessage = JSON.parse(msg.body)
       const messageType: SocketMessageType = message.headers['type'] as SocketMessageType
       handlers[messageType](message)
@@ -71,6 +76,7 @@ export function useChessGame() {
   }
 
   function setChessParty(chessParty: ChessParty | null) {
+    _currentSubscription?.unsubscribe()
     if(chessParty == null) {
       _resetData()
       _chessParty = null
@@ -111,14 +117,15 @@ export function useChessGame() {
     takedPieceWhite.value = pieces.white
     currentTurn.value = _boardApi!.getTurnColor()
     _boardApi.getOpeningName().then((name) => {
-      if (openingName.value != name) openingName.value = name!
+      if (name != null) openingName.value = name
+      else openingName.value = "Start position"
     })
     currentPly.value = _boardApi.getCurrentPlyNumber()
     materialDiff.value = _boardApi.getMaterialCount().materialDiff
   }
 
   function _resetData() {
-    openingName.value = "ㅤ"
+    openingName.value = "Start position"
     currentTurn.value = "white"
     currentPly.value = 1
     materialDiff.value = 0

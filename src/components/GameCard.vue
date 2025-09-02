@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import type { ChessParty, PlayerInfo, PlayerSide } from '@/types/ChessParty';
+import type { ChessParty, PlayerSide } from '@/types/ChessParty';
 import ChessBoard from './ChessBoard.vue';
 import { NFlex, NCard, NText } from 'naive-ui';
 import type { BoardApi, BoardConfig } from 'vue3-chessboard';

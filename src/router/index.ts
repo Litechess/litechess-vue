@@ -5,7 +5,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 
 const HomePage = () => import("@/page/HomePage.vue")
-const PlayPage = () => import("@/page/PlayPage.vue")
 const BoardPage = () => import("@/page/BoardPage.vue")
 const LoginCallbackAuthPage = () => import("@/page/LoginCallbackPage.vue")
 

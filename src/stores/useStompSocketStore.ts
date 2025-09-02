@@ -48,7 +48,6 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
     if (authStore.user) {
       headers['Authorization'] = `Bearer ${authStore.user.access_token}`
     }
-    console.log(headers)
     return headers
   }
 
@@ -117,7 +116,6 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
     personal: boolean,
   ): StompSubscription => {
     const PERSONAL_PREFIX = personal ? USER_PREFIX : ""
-    console.log(`${PERSONAL_PREFIX}${destination}`)
     return _client!.subscribe(`${PERSONAL_PREFIX}${TOPIC_PREFIX}${destination}`, (message: IMessage) =>
       callback(message),
     )

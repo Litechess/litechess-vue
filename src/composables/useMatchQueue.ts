@@ -1,6 +1,5 @@
 import { useStompSocketStore, type SubscriptionInfo } from "@/stores/useStompSocketStore"
 import { readonly, ref, shallowReactive } from "vue"
-import { useRouter } from "vue-router"
 
 const DUMMY_CREATE_REQUIEST = {
 variant: "STANDART",

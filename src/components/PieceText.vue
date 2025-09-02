@@ -16,8 +16,12 @@ const piece: VNode = h(PieceIcon, {
   size: props.size
 })
 
+const emit = defineEmits<{
+  (e: 'click'): void
+}>()
+
 </script>
 
 <template>
-  <image-text :icon="piece" :text="props.text"></image-text>
+  <image-text @click="$emit('click')" :icon="piece" :text="props.text"></image-text>
 </template>
