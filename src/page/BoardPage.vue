@@ -57,11 +57,10 @@ async function loadGame(id: number) {
   return api.getChessGame(id).then((result: ChessParty) => {
     chessGame.setChessParty(result)
     console.log(result)
-    console.log('white id: ' + result.white.name)
-    console.log('black id: ' + result.black.name)
-    console.log('playerSide ' + playerSide.value)
+
     boardConfig.orientation = playerSide.value
-    boardConfig.viewOnly = playerSide.value == undefined ? true : false
+    boardConfig.viewOnly = isViewOnly.value
+
     playerWhiteName.value = result.white.name
     playerBlackName.value = result.black.name
     fetchActiveGames()
@@ -92,7 +91,19 @@ const {
   openingName,
   currentPly,
   materialDiff,
+  gameStatus
 } = toRefs(chessGame)
+
+const isViewOnly = computed(() => {
+  return (playerSide.value == undefined) == true || gameStatus.value != "NOT_FINISHED"
+})
+
+watch(
+  isViewOnly,
+  (newValue) => {
+    boardConfig.viewOnly = newValue
+  },
+)
 
 // composable
 let boardApi: BoardApi
@@ -116,7 +127,6 @@ const piecePane = h(PieceText, {
 const matchmakingTab = h(ImageText, {
   text: 'Matchmaking',
   onClick: () => {
-    console.log('click')
     selectedValueTab.value = 'matchmaking'
   }
 })
@@ -167,6 +177,7 @@ const stopView = () => {
   boardApi.stopViewingHistory()
   selectedMovePly.value = currentPly.value
 }
+
 </script>
 
 <template>
@@ -223,6 +234,7 @@ const stopView = () => {
                   :selectMovePly="selectedMovePly"
                   :moves="moves"
                   @move-click="moveTableClick"
+                  :gameStatus="gameStatus"
                 />
                 <n-flex justify="center" :size="5">
                   <n-button @click="viewPrevious">

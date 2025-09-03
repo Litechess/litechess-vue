@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useStompSocketStore, type SubscriptionInfo } from '@/stores/useStompSocketStore'
-import type { ChessParty, PlayerSide } from '@/types/ChessParty'
+import type { ChessParty, GameStatus, PlayerSide } from '@/types/ChessParty'
 import type { GameResult, MoveRequest } from '@/types/MoveRequest'
 import type { SocketMessage, SocketMessageType } from '@/types/Socket'
 import type { Key } from 'chessground/types'
@@ -27,6 +27,7 @@ export function useChessGame() {
   const currentTurn: Ref<PlayerSide> = ref('white')
   const currentPly: Ref<number> = ref(1)
   const materialDiff: Ref<number> = ref(0)
+  const gameStatus: Ref<GameStatus> = ref("NOT_FINISHED")
 
   const handlers: Record<SocketMessageType, MessageHandler> = {
     move: (message) => {
@@ -85,6 +86,7 @@ export function useChessGame() {
     if (chessParty.white.id == _authStore.getId()) playerSide.value = 'white'
     else if (chessParty.black.id == _authStore.getId()) playerSide.value = 'black'
     gameId.value = chessParty.id
+    gameStatus.value = chessParty.status
     _chessParty = chessParty
     if (_boardApi) {
       setPositionWhenSet()
@@ -122,6 +124,14 @@ export function useChessGame() {
     })
     currentPly.value = _boardApi.getCurrentPlyNumber()
     materialDiff.value = _boardApi.getMaterialCount().materialDiff
+    gameStatus.value = _getGameStatus(_boardApi)
+  }
+
+  function _getGameStatus(boardApi: BoardApi): GameStatus {
+    if(boardApi.getIsGameOver() == false) return "NOT_FINISHED";
+    if(boardApi.getIsDraw()) return "DRAW";
+    if(boardApi.getTurnColor() == "white") return "WIN_BLACK";
+    return "WIN_WHITE";
   }
 
   function _resetData() {
@@ -140,7 +150,7 @@ export function useChessGame() {
     materialDiff: readonly(materialDiff),
     playerSide: readonly(playerSide),
     gameId: readonly(gameId),
-
+    gameStatus: readonly(gameStatus),
     moveHandler,
     subscribe,
     setBoardApi,

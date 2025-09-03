@@ -3,10 +3,12 @@ import { NFlex, NTable, NText, NScrollbar } from 'naive-ui'
 import { computed, h, nextTick, ref, toRefs, watch, type VNode } from 'vue'
 import ImageText from './ImageText.vue'
 import PieceText from './PieceText.vue'
+import type { GameStatus } from '@/types/ChessParty'
 
 interface Props {
   moves: string[]
   selectMovePly: number
+  gameStatus: GameStatus
 }
 
 const props = defineProps<Props>()
@@ -89,6 +91,13 @@ function getMoveView(move: string | null): VNode {
               :class="{ highlighted: row.blackIndex == props.selectMovePly - 1 }"
             >
               <component :is="getMoveView(row.black)" />
+            </n-flex>
+          </td>
+        </tr>
+        <tr v-if ="props.gameStatus != 'NOT_FINISHED'">
+          <td colspan="3">
+            <n-flex justify="center">
+              <n-text> {{ props.gameStatus }} </n-text>
             </n-flex>
           </td>
         </tr>
