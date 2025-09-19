@@ -1,7 +1,7 @@
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useStompSocketStore, type SubscriptionInfo } from '@/stores/useStompSocketStore'
 import type { ChessParty, GameStatus, PlayerSide } from '@/types/ChessParty'
-import type { GameResult, MoveRequest } from '@/types/MoveRequest'
+import type { GameResult, Move } from '@/types/MoveRequest'
 import type { SocketMessage, SocketMessageType } from '@/types/Socket'
 import type { Key } from 'chessground/types'
 import { readonly, ref, shallowReactive, type Ref } from 'vue'
@@ -22,16 +22,16 @@ export function useChessGame() {
   const takedPieceWhite: Ref<string[]> = ref([])
   const takedPieceBlack: Ref<string[]> = ref([])
   const moves: Ref<string[]> = ref([])
-  const openingName = ref("Start position")
+  const openingName = ref('Start position')
   const playerSide: Ref<PlayerSide> = ref(undefined)
   const currentTurn: Ref<PlayerSide> = ref('white')
   const currentPly: Ref<number> = ref(1)
   const materialDiff: Ref<number> = ref(0)
-  const gameStatus: Ref<GameStatus> = ref("NOT_FINISHED")
+  const gameStatus: Ref<GameStatus> = ref('NOT_FINISHED')
 
   const handlers: Record<SocketMessageType, MessageHandler> = {
     move: (message) => {
-      const move: MoveRequest = message.payload as MoveRequest
+      const move: Move = message.payload as Move
       if (_boardApi!.getLastMove() != undefined && _boardApi!.getLastMove()!.san == move.san) {
         return
       }
@@ -52,7 +52,7 @@ export function useChessGame() {
   }
 
   function subscribe(): void {
-    if(_currentSubscription != null) {
+    if (_currentSubscription != null) {
       _currentSubscription.unsubscribe()
     }
 
@@ -66,7 +66,7 @@ export function useChessGame() {
   function moveHandler(move: MoveEvent): void {
     _updateHistory()
     if (!_chessParty || _boardApi!.getTurnColor() == playerSide.value) return
-    const moveRequest: MoveRequest = {
+    const moveRequest: Move = {
       from: move.from,
       to: move.to,
       promotion: move.promotion || null,
@@ -78,7 +78,7 @@ export function useChessGame() {
 
   function setChessParty(chessParty: ChessParty | null) {
     _currentSubscription?.unsubscribe()
-    if(chessParty == null) {
+    if (chessParty == null) {
       _resetData()
       _chessParty = null
       return
@@ -101,15 +101,16 @@ export function useChessGame() {
   }
 
   function setPositionWhenSet() {
-    if(_boardApi == null || _chessParty == null) {
+    if (_boardApi == null || _chessParty == null) {
       return
     }
-    _boardApi.loadPgn(_chessParty.moveUci.join(' '))
+    console.log(_chessParty.moves)
+    _boardApi.loadPgn(_chessParty.moves.map(move => move.san).join(' '))
     _updateHistory()
   }
 
   function _updateHistory() {
-    if(_boardApi == null) {
+    if (_boardApi == null) {
       return
     }
 
@@ -120,7 +121,7 @@ export function useChessGame() {
     currentTurn.value = _boardApi!.getTurnColor()
     _boardApi.getOpeningName().then((name) => {
       if (name != null) openingName.value = name
-      else openingName.value = "Start position"
+      else openingName.value = 'Start position'
     })
     currentPly.value = _boardApi.getCurrentPlyNumber()
     materialDiff.value = _boardApi.getMaterialCount().materialDiff
@@ -128,15 +129,15 @@ export function useChessGame() {
   }
 
   function _getGameStatus(boardApi: BoardApi): GameStatus {
-    if(boardApi.getIsGameOver() == false) return "NOT_FINISHED";
-    if(boardApi.getIsDraw()) return "DRAW";
-    if(boardApi.getTurnColor() == "white") return "WIN_BLACK";
-    return "WIN_WHITE";
+    if (boardApi.getIsGameOver() == false) return 'NOT_FINISHED'
+    if (boardApi.getIsDraw()) return 'DRAW'
+    if (boardApi.getTurnColor() == 'white') return 'WIN_BLACK'
+    return 'WIN_WHITE'
   }
 
   function _resetData() {
-    openingName.value = "Start position"
-    currentTurn.value = "white"
+    openingName.value = 'Start position'
+    currentTurn.value = 'white'
     currentPly.value = 1
     materialDiff.value = 0
     playerSide.value = undefined

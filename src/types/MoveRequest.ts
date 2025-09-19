@@ -1,7 +1,7 @@
-import type { GameStatus } from "./ChessParty"
+import type { GameStatus } from './ChessParty'
 
-export type MoveRequest = {
-  from: string,
+export type Move = {
+  from: string
   to: string
   promotion: string | null
   san: string

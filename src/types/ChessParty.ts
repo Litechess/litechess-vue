@@ -1,18 +1,19 @@
+import type { Move } from './MoveRequest'
+
 export type ChessParty = {
   id: number
   white: PlayerInfo
   black: PlayerInfo
-  moveUci: string[],
-  fen: string,
-  initFen: string,
+  moves: Move[]
+  fen: string
+  initFen: string
   status: GameStatus
-
 }
 
 export type PlayerInfo = {
-  id: string,
+  id: string
   name: string
 }
-export type PlayerSide = "white" | "black" | undefined
-export type GameStatus = "DRAW" | "WIN_WHITE" | "WIN_BLACK" | "NOT_FINISHED"
-export type PieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
+export type PlayerSide = 'white' | 'black' | undefined
+export type GameStatus = 'DRAW' | 'WIN_WHITE' | 'WIN_BLACK' | 'NOT_FINISHED'
+export type PieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k'
