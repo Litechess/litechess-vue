@@ -1,7 +1,7 @@
 import type { Move } from './MoveRequest'
 
 export type ChessParty = {
-  id: number
+  id: string
   white: PlayerInfo
   black: PlayerInfo
   moves: Move[]
@@ -14,6 +14,6 @@ export type PlayerInfo = {
   id: string
   name: string
 }
-export type PlayerSide = 'white' | 'black' | undefined
+export type PlayerSide = 'white' | 'black'
 export type GameStatus = 'DRAW' | 'WIN_WHITE' | 'WIN_BLACK' | 'NOT_FINISHED'
 export type PieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k'

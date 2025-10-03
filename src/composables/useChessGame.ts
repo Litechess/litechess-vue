@@ -71,7 +71,8 @@ export function useChessGame() {
       to: move.to,
       promotion: move.promotion || null,
       san: move.san,
-    }
+      plyNumber: 0 // TODO change
+     }
 
     _stompStore.send(`/game/${gameId.value}`, JSON.stringify(moveRequest))
   }
