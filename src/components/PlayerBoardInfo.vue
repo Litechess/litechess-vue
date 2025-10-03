@@ -7,7 +7,7 @@ import { computed } from 'vue'
 interface Props {
   name: string
   avatar: string
-  pieces: string[]
+  pieces: readonly string[]
   materialDiff: number
   color: PlayerSide
 }

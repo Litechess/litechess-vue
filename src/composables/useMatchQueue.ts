@@ -2,12 +2,13 @@ import { useStompSocketStore, type SubscriptionInfo } from "@/stores/useStompSoc
 import { readonly, ref, shallowReactive } from "vue"
 
 const DUMMY_CREATE_REQUIEST = {
-variant: "STANDART",
-timeControl: "REALTIME",
-category: "CASUAL",
-secondPerSide: 0,
-increment: 0
+timeControl: {
+  "initTime": 1000000,
+  "increment" : 0
+  },
+category: "CASUAL"
 }
+
 export function useMatchQueue() {
 
   const _stompStore = useStompSocketStore()

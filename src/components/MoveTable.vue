@@ -6,7 +6,7 @@ import PieceText from './PieceText.vue'
 import type { GameStatus } from '@/types/ChessParty'
 
 interface Props {
-  moves: string[]
+  moves: readonly string[]
   selectMovePly: number
   gameStatus: GameStatus
 }

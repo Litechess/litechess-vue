@@ -5,6 +5,7 @@ export type Move = {
   to: string
   promotion: string | null
   san: string
+  plyNumber: number
 }
 
 export type GameResult = {

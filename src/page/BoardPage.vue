@@ -2,15 +2,13 @@
 // TODO ONLY FOR DEV TESTING , DELETE FROM ROUTER TO
 import { NFlex, NCard, NTabs, NTabPane, NText, NButton, NScrollbar } from 'naive-ui'
 import PlayerBoardInfo from '@/components/PlayerBoardInfo.vue'
-import { computed, reactive, ref, toRefs, watch, type Ref } from 'vue'
+import { computed, reactive, ref, watch, type Ref } from 'vue'
 import { type BoardApi, type BoardConfig, type MoveEvent } from 'vue3-chessboard'
-import { h  } from 'vue'
-import 'vue3-chessboard/style.css'
+import { h } from 'vue'
 import MoveTable from '@/components/MoveTable.vue'
 import ChessBoard from '@/components/ChessBoard.vue'
 import { ArrowIcon, EqualIcon } from '@/components/icon'
 import PieceText from '@/components/PieceText.vue'
-import { useChessGame } from '@/composables/useChessGame'
 import GameTimer from '@/components/GameTimer.vue'
 import { useApi } from '@/composables/useApi'
 import type { ChessParty, PlayerSide } from '@/types/ChessParty'
@@ -20,42 +18,58 @@ import GameCard from '@/components/GameCard.vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import FindGameButton from '@/components/FindGameButton.vue'
 import ImageText from '@/components/ImageText.vue'
+import type { ChessPartyFilter } from '@/types/Requests'
+import { useLiveGame } from '@/composables/useLiveGame'
+import { useBoard } from '@/composables/useBoard'
 
 const route = useRoute()
 const authStore = useAuthStore()
 const api = useApi()
-const chessGame = useChessGame()
-const gameIdParam: Ref<number> = ref(
-  Number(route.params.gameId == typeof NaN ? 0 : route.params.gameId),
+const boardState = useBoard()
+const liveGame = useLiveGame()
+liveGame.setAfterSyncCallback(() => {
+  boardState.updateState()
+})
+
+const gameIdParam: Ref<string | null> = ref(
+  route.params.gameId.length > 0 ? String(route.params.gameId) : null
 )
+
 const isGameLoaded = ref(false)
 const boardConfig: BoardConfig = reactive({})
 const playerWhiteName = ref('Player 1')
 const playerBlackName = ref('Player 2')
 const activeGames: Ref<ChessParty[]> = ref([])
-const selectedValueTab = ref(gameIdParam.value !== 0 ? 'gamePanel' : 'matchmaking')
+const selectedValueTab = ref(gameIdParam.value != null ? 'gamePanel' : 'matchmaking')
+const playerSide: Ref<PlayerSide | undefined> = ref(undefined)
 
 const activeNonSelectedGames = computed(() => {
-  return activeGames.value.filter((game) => game.id !== gameIdParam.value)
+  return activeGames.value.filter((game) => game.id != gameIdParam.value)
 })
 
-if (gameIdParam.value !== 0) {
-  loadGame(gameIdParam.value).then( () => {
+if (gameIdParam.value != null) {
+
+  loadGame(gameIdParam.value).then(() => {
     isGameLoaded.value = true
   })
 }
 
 async function fetchActiveGames() {
-  return api.getAllGames().then((result: ChessParty[]) => {
+  const filters: ChessPartyFilter = {
+    playerId: authStore.getId()!,
+  }
+
+  return api.getAllGames(filters).then((result: ChessParty[]) => {
     activeGames.value = result
   })
 }
 
 fetchActiveGames()
 
-async function loadGame(id: number) {
+async function loadGame(id: string) {
   return api.getChessGame(id).then((result: ChessParty) => {
-    chessGame.setChessParty(result)
+    if (result.white.id == authStore.getId()) playerSide.value = 'white'
+    else if (result.black.id == authStore.getId()) playerSide.value = 'black'
     console.log(result)
 
     boardConfig.orientation = playerSide.value
@@ -70,46 +84,32 @@ async function loadGame(id: number) {
 onBeforeRouteUpdate((to, from, next) => {
   const paramId: string = to.params.gameId as string
   if (paramId.length > 0) {
-    loadGame(Number(paramId)).then(() => {
-      gameIdParam.value = Number(paramId)
+    loadGame(paramId).then(() => {
+      gameIdParam.value = paramId
       isGameLoaded.value = true
-      selectedValueTab.value = "gamePanel"
+      selectedValueTab.value = 'gamePanel'
     })
   } else {
-    gameIdParam.value = 0
+    gameIdParam.value = null
     isGameLoaded.value = false
   }
 
   next()
 })
 
-const {
-  playerSide,
-  moves,
-  takedPieceWhite,
-  takedPieceBlack,
-  openingName,
-  currentPly,
-  materialDiff,
-  gameStatus
-} = toRefs(chessGame)
-
 const isViewOnly = computed(() => {
-  return (playerSide.value == undefined) == true || gameStatus.value != "NOT_FINISHED"
+  return (playerSide.value == undefined) == true
 })
 
-watch(
-  isViewOnly,
-  (newValue) => {
-    boardConfig.viewOnly = newValue
-  },
-)
+watch(isViewOnly, (newValue) => {
+  boardConfig.viewOnly = newValue
+})
 
 // composable
 let boardApi: BoardApi
 const buttonSize: number = 35
 const activeTimerSide = computed(() => {
-  return playerSide.value == chessGame.currentTurn.value ? true : false
+  return playerSide.value == boardState.currentTurn.value ? true : false
 })
 const notLoadedBoardConfig: BoardConfig = {
   viewOnly: true,
@@ -119,21 +119,21 @@ const piecePane = h(PieceText, {
   text: 'Game',
   piece: 'p',
   onClick: () => {
-    if(isGameLoaded.value == false) return
+    if (isGameLoaded.value == false) return
     selectedValueTab.value = 'gamePanel'
-  }
+  },
 })
 
 const matchmakingTab = h(ImageText, {
   text: 'Matchmaking',
   onClick: () => {
     selectedValueTab.value = 'matchmaking'
-  }
+  },
 })
 
-const selectedMovePly = ref(currentPly.value.valueOf())
+const selectedMovePly = ref(boardState.currentPly.value.valueOf())
 watch(
-  () => currentPly.value,
+  () => boardState.currentPly.value,
   (newValue) => {
     selectedMovePly.value = newValue
   },
@@ -146,13 +146,17 @@ function moveTableClick(ply: number) {
 
 function onBoardCreated(api: BoardApi) {
   boardApi = api
-  chessGame.setBoardApi(api)
-  chessGame.subscribe()
+  boardState.setBoardApi(api)
+  if(gameIdParam.value != null) {
+    liveGame.subscribe(gameIdParam.value, api)
+  }
 }
 
 function onMove(move: MoveEvent) {
   boardApi.stopViewingHistory()
-  chessGame.moveHandler(move)
+  boardState.updateState()
+  if(boardApi.getTurnColor() == playerSide.value) return
+  liveGame.sendMove(move)
 }
 
 function getOrientation(chessParty: ChessParty): PlayerSide {
@@ -162,7 +166,7 @@ function getOrientation(chessParty: ChessParty): PlayerSide {
 }
 
 const viewNext = () => {
-  if (selectedMovePly.value == moves.value.length) return
+  if (selectedMovePly.value == boardState.moves.value.length) return
   boardApi.viewNext()
   selectedMovePly.value = selectedMovePly.value + 1
 }
@@ -175,9 +179,8 @@ const viewPrevious = () => {
 
 const stopView = () => {
   boardApi.stopViewingHistory()
-  selectedMovePly.value = currentPly.value
+  selectedMovePly.value = boardState.currentPly.value
 }
-
 </script>
 
 <template>
@@ -189,8 +192,8 @@ const stopView = () => {
             color="black"
             :name="playerBlackName"
             avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
-            :pieces="takedPieceBlack"
-            :materialDiff="materialDiff"
+            :pieces="boardState.takedPieceBlack.value"
+            :materialDiff="boardState.materialDiff.value"
           />
           <game-timer :active="!activeTimerSide" :duration="100 * 100 * 60" />
         </n-flex>
@@ -200,17 +203,17 @@ const stopView = () => {
           :board-config="boardConfig"
           @move="onMove"
           @board-created="onBoardCreated"
-          :key="gameIdParam"
+          :key="gameIdParam as string"
         />
-        <chess-board v-else :board-config="notLoadedBoardConfig" :key="0"/>
+        <chess-board v-else :board-config="notLoadedBoardConfig" :key="0" />
 
         <n-flex justify="space-between">
           <player-board-info
             color="white"
             :name="playerWhiteName"
             avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
-            :pieces="takedPieceWhite"
-            :materialDiff="materialDiff"
+            :pieces="boardState.takedPieceWhite.value"
+            :materialDiff="boardState.materialDiff.value"
           />
           <game-timer :active="activeTimerSide" :duration="100 * 100 * 60" />
         </n-flex>
@@ -224,17 +227,14 @@ const stopView = () => {
             size="large"
             :value="selectedValueTab"
           >
-            <n-tab-pane
-              :disabled="!isGameLoaded"
-              name="gamePanel"
-              :tab="piecePane">
+            <n-tab-pane :disabled="!isGameLoaded" name="gamePanel" :tab="piecePane">
               <n-flex vertical justify="space-between">
-                <n-text style="font-size: 20px"> {{ openingName }}</n-text>
+                <n-text style="font-size: 20px"> {{ boardState.openingName }}</n-text>
                 <move-table
                   :selectMovePly="selectedMovePly"
-                  :moves="moves"
+                  :moves="boardState.moves.value"
                   @move-click="moveTableClick"
-                  :gameStatus="gameStatus"
+                  :gameStatus="boardState.gameStatus.value"
                 />
                 <n-flex justify="center" :size="5">
                   <n-button @click="viewPrevious">
@@ -249,10 +249,7 @@ const stopView = () => {
                 </n-flex>
               </n-flex>
             </n-tab-pane>
-            <n-tab-pane
-              name="matchmaking"
-              :tab="matchmakingTab"
-              display-directive="show:lazy">
+            <n-tab-pane name="matchmaking" :tab="matchmakingTab" display-directive="show:lazy">
               <n-flex vertical :size="30">
                 <find-game-button />
                 <n-flex vertical align="center">
