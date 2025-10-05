@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { PlayerSide } from '@/types/ChessParty';
 import { NFlex, NCountdown, type CountdownProps } from 'naive-ui'
-import { h } from 'vue';
-
+import { h, ref } from 'vue';
+import type { CountdownInst } from 'naive-ui'
 interface Props {
   duration?: number
   color?: PlayerSide
@@ -20,6 +20,7 @@ const renderTimes: CountdownProps['render'] = ({
     h('span', [String(seconds).padStart(2, '0')]),
   ]
 }
+
 </script>
 
 <template>

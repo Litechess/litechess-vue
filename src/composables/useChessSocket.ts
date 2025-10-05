@@ -1,5 +1,5 @@
 import { useStompSocketStore } from '@/stores/useStompSocketStore'
-import type { GameResult, Move } from '@/types/MoveRequest'
+import type { GameResult, Move, MoveMessage } from '@/types/MoveRequest'
 import type { SocketMessage, SocketMessageType } from '@/types/Socket'
 import type { MoveEvent } from 'vue3-chessboard'
 
@@ -12,7 +12,7 @@ export function useChessSocket() {
 
   const handlers: Record<SocketMessageType, MessageHandler> = {
     move: (message) => {
-      const move: Move = message.payload as Move
+      const move: MoveMessage = message.payload as MoveMessage
       moveCallback(move)
     },
 
@@ -22,10 +22,10 @@ export function useChessSocket() {
     },
   }
 
-  let moveCallback: (move: Move) => void = () => {}
+  let moveCallback: (move: MoveMessage) => void = () => {}
   let gameFinishCallback: (resultMessage: GameResult) => void = () => {}
 
-  function setMoveCallback(callback: (move: Move) => void) {
+  function setMoveCallback(callback: (move: MoveMessage) => void) {
     moveCallback = callback
   }
 
@@ -55,7 +55,7 @@ export function useChessSocket() {
       to: move.to,
       promotion: move.promotion || null,
       san: move.san,
-      plyNumber: 0 // TODO change
+      plyNumber: 0 // TODO fix
      }
 
     _socketStore.send(`/game/${currentGameId}`, JSON.stringify(moveRequest))

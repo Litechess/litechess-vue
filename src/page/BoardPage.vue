@@ -21,18 +21,15 @@ import ImageText from '@/components/ImageText.vue'
 import type { ChessPartyFilter } from '@/types/Requests'
 import { useLiveGame } from '@/composables/useLiveGame'
 import { useBoard } from '@/composables/useBoard'
+import type { LiveGame } from '@/types/LiveGame'
 
 const route = useRoute()
 const authStore = useAuthStore()
 const api = useApi()
 const boardState = useBoard()
 const liveGame = useLiveGame()
-liveGame.setAfterSyncCallback(() => {
-  boardState.updateState()
-})
-
 const gameIdParam: Ref<string | null> = ref(
-  route.params.gameId.length > 0 ? String(route.params.gameId) : null
+  route.params.gameId.length > 0 ? String(route.params.gameId) : null,
 )
 
 const isGameLoaded = ref(false)
@@ -42,13 +39,44 @@ const playerBlackName = ref('Player 2')
 const activeGames: Ref<ChessParty[]> = ref([])
 const selectedValueTab = ref(gameIdParam.value != null ? 'gamePanel' : 'matchmaking')
 const playerSide: Ref<PlayerSide | undefined> = ref(undefined)
+const whiteTimer = ref(0)
+const blackTimer = ref(0)
+const currentParty = ref<ChessParty | null>(null)
+
+const whiteTimerActive = computed(() => {
+  return boardState.currentTurn.value === 'white'
+})
+
+const blackTimerActive = computed(() => {
+  return boardState.currentTurn.value === 'black'
+})
+
+liveGame.setAfterSyncCallback((liveGame: LiveGame) => {
+  if (currentParty.value!.timeControl != null) {
+    console.log('TRY SET TIME')
+    console.log(liveGame)
+
+    whiteTimer.value = liveGame.currentTimers.WHITE ?? currentParty.value!.timeControl.initTime
+    blackTimer.value = liveGame.currentTimers.BLACK ?? currentParty.value!.timeControl.initTime
+  }
+  boardState.updateState()
+})
+liveGame.setAfterMoveCallback((moveMessage) => {
+  if (currentParty.value!.timeControl != null) {
+
+    if(boardState.currentTurn.value === 'white'){
+      whiteTimer.value = moveMessage.timers.WHITE
+    } else if(boardState.currentTurn.value === 'black'){
+      blackTimer.value = moveMessage.timers.BLACK
+    }
+  }
+})
 
 const activeNonSelectedGames = computed(() => {
   return activeGames.value.filter((game) => game.id != gameIdParam.value)
 })
 
 if (gameIdParam.value != null) {
-
   loadGame(gameIdParam.value).then(() => {
     isGameLoaded.value = true
   })
@@ -77,8 +105,23 @@ async function loadGame(id: string) {
 
     playerWhiteName.value = result.white.name
     playerBlackName.value = result.black.name
+    if (result.timeControl != null) {
+      whiteTimer.value =
+        getLastTimeFromArr(result.timerHistory, 'white') ?? result.timeControl.initTime
+      blackTimer.value =
+        getLastTimeFromArr(result.timerHistory, 'black') ?? result.timeControl.initTime
+    }
+    currentParty.value = result
     fetchActiveGames()
   })
+}
+
+function getLastTimeFromArr(arr: number[], side: PlayerSide): number | null {
+  if (side == 'white' && arr.length >= 1)
+    return arr.length % 2 == 0 ? arr[arr.length - 2] : arr[arr.length - 1]
+  else if (side == 'black' && arr.length >= 2)
+    return arr.length % 2 == 0 ? arr[arr.length - 1] : arr[arr.length - 2]
+  return null
 }
 
 onBeforeRouteUpdate((to, from, next) => {
@@ -108,9 +151,6 @@ watch(isViewOnly, (newValue) => {
 // composable
 let boardApi: BoardApi
 const buttonSize: number = 35
-const activeTimerSide = computed(() => {
-  return playerSide.value == boardState.currentTurn.value ? true : false
-})
 const notLoadedBoardConfig: BoardConfig = {
   viewOnly: true,
 }
@@ -147,7 +187,7 @@ function moveTableClick(ply: number) {
 function onBoardCreated(api: BoardApi) {
   boardApi = api
   boardState.setBoardApi(api)
-  if(gameIdParam.value != null) {
+  if (gameIdParam.value != null) {
     liveGame.subscribe(gameIdParam.value, api)
   }
 }
@@ -155,7 +195,7 @@ function onBoardCreated(api: BoardApi) {
 function onMove(move: MoveEvent) {
   boardApi.stopViewingHistory()
   boardState.updateState()
-  if(boardApi.getTurnColor() == playerSide.value) return
+  if (boardApi.getTurnColor() == playerSide.value) return
   liveGame.sendMove(move)
 }
 
@@ -186,7 +226,10 @@ const stopView = () => {
 <template>
   <n-flex style="height: calc(100dvh - 2rem)" justify="center" align="center">
     <n-flex :size="50" justify="center">
-      <n-flex :style="{ flexDirection: playerSide == 'white' ? 'column' : 'column-reverse' }">
+      <n-flex
+        v-if="isGameLoaded"
+        :style="{ flexDirection: playerSide == 'white' ? 'column' : 'column-reverse' }"
+      >
         <n-flex justify="space-between">
           <player-board-info
             color="black"
@@ -195,17 +238,15 @@ const stopView = () => {
             :pieces="boardState.takedPieceBlack.value"
             :materialDiff="boardState.materialDiff.value"
           />
-          <game-timer :active="!activeTimerSide" :duration="100 * 100 * 60" />
+          <game-timer :active="blackTimerActive" :duration="blackTimer" :key="blackTimer" />
         </n-flex>
         <chess-board
-          v-if="isGameLoaded"
           :player-color="playerSide"
           :board-config="boardConfig"
           @move="onMove"
           @board-created="onBoardCreated"
           :key="gameIdParam as string"
         />
-        <chess-board v-else :board-config="notLoadedBoardConfig" :key="0" />
 
         <n-flex justify="space-between">
           <player-board-info
@@ -215,7 +256,28 @@ const stopView = () => {
             :pieces="boardState.takedPieceWhite.value"
             :materialDiff="boardState.materialDiff.value"
           />
-          <game-timer :active="activeTimerSide" :duration="100 * 100 * 60" />
+          <game-timer :active="whiteTimerActive" :duration="whiteTimer" :key="whiteTimer" />
+        </n-flex>
+      </n-flex>
+      <n-flex v-else :style="{ flexDirection: 'column' }">
+        <n-flex justify="space-between">
+          <player-board-info
+            color="black"
+            name="Black"
+            avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
+            :pieces="[]"
+            :materialDiff="0"
+          />
+        </n-flex>
+        <chess-board :board-config="notLoadedBoardConfig" :key="0" />
+        <n-flex justify="space-between">
+          <player-board-info
+            color="white"
+            name="White"
+            avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
+            :pieces="[]"
+            :materialDiff="0"
+          />
         </n-flex>
       </n-flex>
       <n-flex>
