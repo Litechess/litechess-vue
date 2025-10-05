@@ -6,4 +6,8 @@ export type LiveGame = {
   moves: Move[];
   playerSides: Record<PlayerSide, string>;
   timerHistory: number[];
+  currentTimers: {
+    WHITE: number
+    BLACK: number
+  }
 };

@@ -5,6 +5,11 @@ export type ChessParty = {
   white: PlayerInfo
   black: PlayerInfo
   moves: Move[]
+  timerHistory: number[],
+  timeControl: {
+    initTime: number,
+    increment: number
+  }
   fen: string
   initFen: string
   status: GameStatus

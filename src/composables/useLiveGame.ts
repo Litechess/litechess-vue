@@ -1,6 +1,6 @@
 import { BoardApi, type MoveEvent } from 'vue3-chessboard'
 import { useChessSocket } from './useChessSocket'
-import type { Move } from '@/types/MoveRequest'
+import type { Move, MoveMessage } from '@/types/MoveRequest'
 import { useApi } from './useApi'
 import type { LiveGame } from '@/types/LiveGame'
 
@@ -13,32 +13,35 @@ export function useLiveGame() {
   let _pendingMoves: Move[] = []
   let _isSync: boolean = false
 
-  let afterMoveCallback: ((move: Move) => void) | null = null
+  let afterMoveCallback: ((move: MoveMessage, isApplied: boolean) => void) | null = null
   let afterSyncCallback: ((liveGame: LiveGame) => void) | null = null
 
   _init()
 
   function _init() {
-    _chessSocket.setMoveCallback((move: Move) => {
+    _chessSocket.setMoveCallback((moveMessage: MoveMessage) => {
       if (_isSync === false) {
-        _pendingMoves.push(move)
+        _pendingMoves.push(moveMessage.move)
         return
       }
 
-      if (_validateMove(move) === false) {
+      if (_validateMove(moveMessage.move) === false) {
+        if(afterMoveCallback !== null) {
+          afterMoveCallback(moveMessage, false)
+        }
         return
       }
 
-      _board.move(move.san)
+      _board.move(moveMessage.move.san)
 
       if(afterMoveCallback !== null) {
-        afterMoveCallback(move)
+        afterMoveCallback(moveMessage, true)
       }
     })
   }
 
   function _validateMove(move: Move): boolean {
-    if (_board.getLastMove() !== undefined && _board.getLastMove().san == move.san) {
+    if (_board.getLastMove() !== undefined && _board.getLastMove()!.san == move.san) {
       return false
     }
 
@@ -72,7 +75,7 @@ export function useLiveGame() {
     return [...map.values()].sort((a, b) => a.plyNumber - b.plyNumber);
   }
 
-  function setAfterMoveCallback(callback: (move: Move) => void) {
+  function setAfterMoveCallback(callback: (move: MoveMessage) => void) {
     afterMoveCallback = callback
   }
 
