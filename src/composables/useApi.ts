@@ -1,7 +1,8 @@
 import { useHttpClient } from "@/stores/useHttpClient";
 import type { ChessParty } from "@/types/ChessParty";
-import type { LiveGame } from "@/types/LiveGame";
+import type { LiveGameResponse } from "@/types/LiveGame";
 import type { ChessPartyFilter } from "@/types/Requests";
+import type { ServerNowResponse } from "@/types/ServerNow";
 
 export function useApi() {
 
@@ -17,13 +18,18 @@ export function useApi() {
     return _httpClient.get(`api/v1/games?${oponentParam}&${ownerParam}`)
   }
 
-  async function getLiveGame(gameId: string): Promise<LiveGame> {
+  async function getLiveGame(gameId: string): Promise<LiveGameResponse> {
     return _httpClient.get(`api/v1/livegames/${gameId}`)
+  }
+
+  async function getServerTime(): Promise<ServerNowResponse> {
+    return _httpClient.get(`api/v1/livegames/serverNow`)
   }
 
   return {
     getChessGame,
     getAllGames: getParties,
-    getLiveGame
+    getLiveGame,
+    getServerTime
   }
 }

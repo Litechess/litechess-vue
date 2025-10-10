@@ -21,13 +21,15 @@ import ImageText from '@/components/ImageText.vue'
 import type { ChessPartyFilter } from '@/types/Requests'
 import { useLiveGame } from '@/composables/useLiveGame'
 import { useBoard } from '@/composables/useBoard'
-import type { LiveGame } from '@/types/LiveGame'
+import type { LiveGameResponse } from '@/types/LiveGame'
+import { useServerTimeSync } from '@/composables/useServerTimeSync'
 
 const route = useRoute()
 const authStore = useAuthStore()
 const api = useApi()
 const boardState = useBoard()
 const liveGame = useLiveGame()
+const serverTimeSync = useServerTimeSync(10000)
 const gameIdParam: Ref<string | null> = ref(
   route.params.gameId.length > 0 ? String(route.params.gameId) : null,
 )
@@ -51,13 +53,17 @@ const blackTimerActive = computed(() => {
   return boardState.currentTurn.value === 'black'
 })
 
-liveGame.setAfterSyncCallback((liveGame: LiveGame) => {
+function getRemaining(deadline: number): number {
+  return Math.max(deadline - serverTimeSync.getServerNow(), 0);
+}
+
+liveGame.setAfterSyncCallback((liveGame: LiveGameResponse) => {
   if (currentParty.value!.timeControl != null) {
     console.log('TRY SET TIME')
     console.log(liveGame)
 
-    whiteTimer.value = liveGame.currentTimers.WHITE ?? currentParty.value!.timeControl.initTime
-    blackTimer.value = liveGame.currentTimers.BLACK ?? currentParty.value!.timeControl.initTime
+    whiteTimer.value = getRemaining(liveGame.game.currentTimers.WHITE)
+    blackTimer.value = getRemaining(liveGame.game.currentTimers.BLACK)
   }
   boardState.updateState()
 })
@@ -65,9 +71,9 @@ liveGame.setAfterMoveCallback((moveMessage) => {
   if (currentParty.value!.timeControl != null) {
 
     if(boardState.currentTurn.value === 'white'){
-      whiteTimer.value = moveMessage.timers.WHITE
+      whiteTimer.value = getRemaining(moveMessage.timers.WHITE)
     } else if(boardState.currentTurn.value === 'black'){
-      blackTimer.value = moveMessage.timers.BLACK
+      blackTimer.value = getRemaining(moveMessage.timers.BLACK)
     }
   }
 })
@@ -96,12 +102,14 @@ fetchActiveGames()
 
 async function loadGame(id: string) {
   return api.getChessGame(id).then((result: ChessParty) => {
+    currentParty.value = result
     if (result.white.id == authStore.getId()) playerSide.value = 'white'
     else if (result.black.id == authStore.getId()) playerSide.value = 'black'
     console.log(result)
 
     boardConfig.orientation = playerSide.value
     boardConfig.viewOnly = isViewOnly.value
+    console.log(isViewOnly.value)
 
     playerWhiteName.value = result.white.name
     playerBlackName.value = result.black.name
@@ -111,7 +119,7 @@ async function loadGame(id: string) {
       blackTimer.value =
         getLastTimeFromArr(result.timerHistory, 'black') ?? result.timeControl.initTime
     }
-    currentParty.value = result
+
     fetchActiveGames()
   })
 }
@@ -141,11 +149,7 @@ onBeforeRouteUpdate((to, from, next) => {
 })
 
 const isViewOnly = computed(() => {
-  return (playerSide.value == undefined) == true
-})
-
-watch(isViewOnly, (newValue) => {
-  boardConfig.viewOnly = newValue
+  return (playerSide.value == undefined) == true || (currentParty.value != null && currentParty.value.status != "NOT_FINISHED")
 })
 
 // composable
@@ -186,8 +190,9 @@ function moveTableClick(ply: number) {
 
 function onBoardCreated(api: BoardApi) {
   boardApi = api
+  boardApi.loadPgn(currentParty.value!.moves.map((m) => m.san).join(' '))
   boardState.setBoardApi(api)
-  if (gameIdParam.value != null) {
+  if (gameIdParam.value != null && currentParty.value!.status == "NOT_FINISHED") {
     liveGame.subscribe(gameIdParam.value, api)
   }
 }
@@ -238,7 +243,7 @@ const stopView = () => {
             :pieces="boardState.takedPieceBlack.value"
             :materialDiff="boardState.materialDiff.value"
           />
-          <game-timer :active="blackTimerActive" :duration="blackTimer" :key="blackTimer" />
+          <game-timer :active="blackTimerActive" :duration="blackTimer" :key="blackTimer"/>
         </n-flex>
         <chess-board
           :player-color="playerSide"
@@ -256,7 +261,7 @@ const stopView = () => {
             :pieces="boardState.takedPieceWhite.value"
             :materialDiff="boardState.materialDiff.value"
           />
-          <game-timer :active="whiteTimerActive" :duration="whiteTimer" :key="whiteTimer" />
+          <game-timer :active="whiteTimerActive" :duration="whiteTimer" :key="whiteTimer"/>
         </n-flex>
       </n-flex>
       <n-flex v-else :style="{ flexDirection: 'column' }">

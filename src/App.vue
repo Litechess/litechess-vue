@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import { useAuthStore } from './stores/useAuthStore'
 import { useStompSocketStore } from './stores/useStompSocketStore'
-import { NConfigProvider, NLayoutSider, NGlobalStyle, darkTheme, NLayout, NLayoutContent, NLayoutHeader } from 'naive-ui'
+import { NConfigProvider, NGlobalStyle, darkTheme, NLayout, NLayoutContent } from 'naive-ui'
 
 const stompSocketStore = useStompSocketStore()
 const authStore = useAuthStore()
@@ -32,11 +32,7 @@ const themeOverrides = {
 <template>
   <n-config-provider :theme="theme" :theme-overrides="themeOverrides">
     <n-global-style />
-    <n-layout has-sider>
-      <n-layout-sider
-        position="absolute"
-        bordered="true"
-        show-trigger="arrow-circle"/>
+    <n-layout>
       <n-layout-content content-style="min-height: calc(100dvh - 6rem); padding: 1rem; min-width: 320px;">
         <router-view> </router-view>
       </n-layout-content>

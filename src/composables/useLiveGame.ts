@@ -2,7 +2,7 @@ import { BoardApi, type MoveEvent } from 'vue3-chessboard'
 import { useChessSocket } from './useChessSocket'
 import type { Move, MoveMessage } from '@/types/MoveRequest'
 import { useApi } from './useApi'
-import type { LiveGame } from '@/types/LiveGame'
+import type { LiveGameResponse } from '@/types/LiveGame'
 
 export function useLiveGame() {
   const _api = useApi()
@@ -14,7 +14,7 @@ export function useLiveGame() {
   let _isSync: boolean = false
 
   let afterMoveCallback: ((move: MoveMessage, isApplied: boolean) => void) | null = null
-  let afterSyncCallback: ((liveGame: LiveGame) => void) | null = null
+  let afterSyncCallback: ((liveGame: LiveGameResponse) => void) | null = null
 
   _init()
 
@@ -49,12 +49,12 @@ export function useLiveGame() {
   }
 
   async function syncGame() {
-    const promise: Promise<LiveGame> =_api.getLiveGame(_currentGameId).then((liveGame) => {
-      const moves: Move[] = _mergeMoves(liveGame.moves, _pendingMoves)
+    const promise: Promise<LiveGameResponse> =_api.getLiveGame(_currentGameId).then((liveGameResponse) => {
+      const moves: Move[] = _mergeMoves(liveGameResponse.game.moves, _pendingMoves)
       _board.loadPgn(moves.map(m => m.san).join(' '))
       _pendingMoves = []
       _isSync = true
-      return liveGame
+      return liveGameResponse
     })
 
     if(afterSyncCallback !== null) {
@@ -79,7 +79,7 @@ export function useLiveGame() {
     afterMoveCallback = callback
   }
 
-  function setAfterSyncCallback(callback: (liveGame: LiveGame) => void) {
+  function setAfterSyncCallback(callback: (liveGame: LiveGameResponse) => void) {
     afterSyncCallback = callback
   }
 

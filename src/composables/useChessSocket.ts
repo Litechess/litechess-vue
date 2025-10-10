@@ -13,11 +13,13 @@ export function useChessSocket() {
   const handlers: Record<SocketMessageType, MessageHandler> = {
     move: (message) => {
       const move: MoveMessage = message.payload as MoveMessage
+      console.log(move)
       moveCallback(move)
     },
 
     gameFinish: (message) => {
       const resultMessage: GameResult = message.payload as GameResult
+      console.log("GAME FINISH" + resultMessage.status)
       gameFinishCallback(resultMessage)
     },
   }

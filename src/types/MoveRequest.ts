@@ -13,6 +13,7 @@ export type MoveMessage = {
     WHITE: number
     BLACK: number
   }
+  serverNow: number
 }
 
 export type GameResult = {

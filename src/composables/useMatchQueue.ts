@@ -3,7 +3,7 @@ import { readonly, ref, shallowReactive } from "vue"
 
 const DUMMY_CREATE_REQUIEST = {
 timeControl: {
-  "initTime": 1000000,
+  "initTime": 15000,
   "increment" : 0
   },
 category: "CASUAL"

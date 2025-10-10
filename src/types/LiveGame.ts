@@ -11,3 +11,13 @@ export type LiveGame = {
     BLACK: number
   }
 };
+
+export type LiveGameResponse = {
+  game: LiveGame,
+  serverNow: number
+}
+
+export type MultipleLiveGameResponse = {
+  games: LiveGame[],
+  serverNow: number
+}
