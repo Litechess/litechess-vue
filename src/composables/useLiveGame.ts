@@ -18,6 +18,7 @@ export function useLiveGame() {
 
   _init()
 
+
   function _init() {
     _chessSocket.setMoveCallback((moveMessage: MoveMessage) => {
       if (_isSync === false) {

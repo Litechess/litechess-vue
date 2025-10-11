@@ -9,8 +9,7 @@ export type ChessParty = {
   timeControl: {
     initTime: number,
     increment: number
-  }
-  fen: string
+  } | null
   initFen: string
   status: GameStatus
 }
