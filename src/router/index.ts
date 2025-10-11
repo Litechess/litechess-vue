@@ -28,7 +28,7 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/test',
+      path: '/test/:gameId?',
       name: 'test',
       component: BoardTest
     }
