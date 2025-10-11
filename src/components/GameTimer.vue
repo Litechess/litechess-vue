@@ -7,6 +7,7 @@ interface Props {
   duration: number
   color?: PlayerSide
   active: boolean
+  onFinish?: () => void
 }
 
 defineProps<Props>();
@@ -28,6 +29,7 @@ const renderTimes: CountdownProps['render'] = ({
     <n-countdown
       :render="renderTimes"
       :duration="duration"
+      :on-finish="onFinish"
       :active="active"/>
   </n-flex>
 </template>

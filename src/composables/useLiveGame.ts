@@ -8,7 +8,7 @@ export function useLiveGame() {
   const _api = useApi()
   const _chessSocket = useChessSocket()
   let _board: BoardApi
-  let _currentGameId: string
+  let _currentGameId: string | null
 
   let _pendingMoves: Move[] = []
   let _isSync: boolean = false
@@ -38,6 +38,11 @@ export function useLiveGame() {
         afterMoveCallback(moveMessage, true)
       }
     })
+
+    _chessSocket.setGameFinishCallback(() => {
+      console.log("game end")
+      unsubcribe()
+    })
   }
 
   function _validateMove(move: Move): boolean {
@@ -49,6 +54,10 @@ export function useLiveGame() {
   }
 
   async function syncGame() {
+    if(_currentGameId == null) {
+      console.error("live game id did not set")
+      return
+    }
     const promise: Promise<LiveGameResponse> =_api.getLiveGame(_currentGameId).then((liveGameResponse) => {
       const moves: Move[] = _mergeMoves(liveGameResponse.game.moves, _pendingMoves)
       _board.loadPgn(moves.map(m => m.san).join(' '))
@@ -88,6 +97,12 @@ export function useLiveGame() {
     _currentGameId = gameId
     _chessSocket.subscribe(gameId)
     syncGame()
+  }
+
+  function unsubcribe() {
+    if(_currentGameId == null) return
+    _chessSocket.unsubscribe()
+    _currentGameId = null
   }
 
   return {
