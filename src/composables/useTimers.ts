@@ -1,51 +1,62 @@
-import { type PlayerSide, type Timer } from "@/types/ChessParty";
-import { ref, type InjectionKey } from "vue";
+import { type PlayerSide, type Timer } from '@/types/ChessParty'
+import { readonly, ref, type InjectionKey } from 'vue'
 
 export const TimerKey: InjectionKey<ReturnType<typeof useTimers>> = Symbol('timers')
 export function useTimers() {
+  const isActive = ref(false)
 
-  const timerWhite = ref<Timer>({
+  const white = ref<Timer>({
     active: false,
-    duration: 0
+    duration: 0,
   })
 
-  const timerBlack = ref<Timer>({
+  const black = ref<Timer>({
     active: false,
-    duration: 0
+    duration: 0,
   })
 
-  function startTimers(side: PlayerSide) {
-    if(side == 'white') {
-      timerWhite.value.active = true
+  function start(side: PlayerSide) {
+    if (side == 'white') {
+      white.value.active = true
     } else {
-      timerBlack.value.active = true
+      black.value.active = true
     }
+    isActive.value = true
   }
 
-  function swapTimers() {
-    const temp = timerWhite.value.active
-    timerWhite.value.active = timerBlack.value.active
-    timerBlack.value.active = temp
+  function stop() {
+    white.value.active = false
+    black.value.active = false
+    isActive.value = false
   }
 
-  function resetTimers() {
-    timerWhite.value.active = false
-    timerBlack.value.active = false
-    timerWhite.value.duration = 0
-    timerBlack.value.duration = 0
+  function swap() {
+    const temp = white.value.active
+    white.value.active = black.value.active
+    black.value.active = temp
+  }
+
+  function reset() {
+    white.value.active = false
+    black.value.active = false
+    white.value.duration = 0
+    black.value.duration = 0
+    isActive.value = false
   }
 
   function setDuration(side: PlayerSide, duration: number) {
-    if(side == "white") timerWhite.value.duration = duration
-    else timerBlack.value.duration = duration
+    if (side == 'white') white.value.duration = duration
+    else black.value.duration = duration
   }
 
   return {
-    timerWhite,
-    timerBlack,
-    resetTimers,
+    white: white,
+    black: black,
+    reset: reset,
     setDuration,
-    swapTimers,
-    startTimers
+    stop,
+    swap: swap,
+    isActive: readonly(isActive),
+    start: start,
   }
 }

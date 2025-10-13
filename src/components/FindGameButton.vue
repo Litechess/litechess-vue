@@ -12,8 +12,8 @@ const loading = ref(false)
 
 const router = useRouter()
 
-const gameFindedCallback = (gameId: number) => {
-  router.push(`/game/${gameId}`)
+const gameFindedCallback = (gameId: string) => {
+  router.push(`/test/${gameId}`)
 }
 
 function click() {
