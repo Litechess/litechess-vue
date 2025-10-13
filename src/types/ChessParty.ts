@@ -18,6 +18,11 @@ export type PlayerInfo = {
   id: string
   name: string
 }
+
+export type Timer = {
+  active: boolean
+  duration: number
+}
 export type PlayerSide = 'white' | 'black'
 export type GameStatus = 'DRAW' | 'WIN_WHITE' | 'WIN_BLACK' | 'NOT_FINISHED'
 export type PieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k'

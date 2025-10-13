@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { NFlex, NAvatar, NText } from 'naive-ui'
 import type { PlayerSide } from '@/types/ChessParty'
-import PieceIcon from './icon/PieceIcon.vue'
+import PieceIcon from '../icon/PieceIcon.vue'
 import { computed } from 'vue'
 
 interface Props {

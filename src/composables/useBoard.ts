@@ -2,7 +2,9 @@ import type { GameStatus, PlayerSide } from "@/types/ChessParty";
 import type { Move } from "@/types/MoveRequest";
 import { readonly, ref, type Ref } from "vue";
 import type { BoardApi, CapturedPieces } from "vue3-chessboard"
+import { type InjectionKey } from 'vue'
 
+export const BoardKey: InjectionKey<ReturnType<typeof useBoard>> = Symbol('board')
 export function useBoard() {
 
   let _boardApi: BoardApi | null = null;
