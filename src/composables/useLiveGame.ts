@@ -108,6 +108,7 @@ export function useLiveGame() {
 
   return {
     subscribe,
+    unsubcribe,
     syncGame,
     setAfterMoveCallback,
     setAfterSyncCallback,

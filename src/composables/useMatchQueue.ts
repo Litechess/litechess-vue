@@ -16,11 +16,11 @@ export function useMatchQueue() {
 
   const inQueue = ref(false)
 
-  function enterInQueue(gameFindedCallback: (gameId: number) => void): void {
+  function enterInQueue(gameFindedCallback: (gameId: string) => void): void {
     if(inQueue.value) return
     _findSubInfo =  _stompStore.subscribe(`/matchmaking/queue`, (msg) => {
       console.log("GAME FINDED")
-      const gameId = JSON.parse(msg.body).payload.gameId as number
+      const gameId = JSON.parse(msg.body).payload.gameId
       gameFindedCallback(gameId)
       inQueue.value = false
 

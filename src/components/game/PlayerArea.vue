@@ -12,6 +12,7 @@ const props = defineProps<{
   materialDiff?: number
   timerShow?: boolean
   timer?: Timer
+  onTimerFinish?: (side: PlayerSide) => void
 }>()
 
 const DEFAULT_COLOR: PlayerSide = 'white'
@@ -47,6 +48,10 @@ const timerValue = computed<number>(() => {
 const timerActive = computed<boolean>(() => {
   return props.timer ? props.timer.active : DEFAULT_ACTIVE_TIMER
 })
+
+const onTimerFinished = () => {
+  props.onTimerFinish?.(color.value)
+}
 </script>
 
 <template>
@@ -58,6 +63,12 @@ const timerActive = computed<boolean>(() => {
       :pieces="pieces"
       :materialDiff="materialDiff"
     />
-    <game-timer v-if="timerShow" :active="timerActive" :duration="timerValue" :key="timerValue" />
+    <game-timer
+      v-if="timerShow"
+      :active="timerActive"
+      :duration="timerValue"
+      :key="timerValue"
+      :on-finish="onTimerFinished"
+    />
   </n-flex>
 </template>
