@@ -23,10 +23,6 @@ export function useBoard() {
     updateState()
   }
   function updateState() {
-    if (_boardApi == null) {
-      return
-    }
-
     moves.value = _boardApi.getHistory()
     const pieces: CapturedPieces = _boardApi.getCapturedPieces()
     takedPieceBlack.value = pieces.black
@@ -68,3 +64,5 @@ export function useBoard() {
     updateState
   }
 }
+
+export type BoardState = ReturnType<typeof useBoard>
