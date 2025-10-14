@@ -4,14 +4,16 @@ import BoardView from './BoardView.vue'
 import PlayerArea from './PlayerArea.vue'
 import { computed, inject } from 'vue'
 import type { BoardApi, MoveEvent } from 'vue3-chessboard'
-import { BoardKey } from '@/composables/useBoard'
+import { BoardKey, useBoard } from '@/composables/useBoard'
 import { NFlex } from 'naive-ui'
 
 
 const props = defineProps<{
+  stateInjected?: boolean
   whiteTimer?: Timer
   blackTimer?: Timer
   timerShow?: boolean
+  playerInfoShow?: boolean
   orientation?: PlayerSide
   viewOnly?: boolean
   playerSide?: PlayerSide
@@ -21,7 +23,9 @@ const props = defineProps<{
   onTimerFinish?: (side: PlayerSide) => void
 }>()
 
-const boardState = inject(BoardKey, undefined)
+
+console.log("INJECTED: " + props.stateInjected)
+const boardState = props.stateInjected ? inject(BoardKey, undefined) : useBoard()
 
 const materialDiff = computed(() => {
   return boardState ? boardState.materialDiff.value : undefined
@@ -44,9 +48,21 @@ const playerInfoBlack = computed(() =>
 const gameId = computed(() =>
   props.chessParty ? props.chessParty.id : undefined,
 )
-const timerShow = computed(() => {
-  return props.timerShow ?? false
+const playerInfoShow = computed(() => {
+  return props.playerInfoShow ?? false
 })
+const timerShow = computed(() => {
+  return (props.timerShow ?? false) && props.playerInfoShow
+})
+const viewOnly = computed(() => {
+  if(props.viewOnly !== undefined) return props.viewOnly
+  if(props.whiteTimer && props.blackTimer && props.timerShow) {
+    if(props.whiteTimer.duration === 0 || props.blackTimer.duration === 0) return true
+  }
+
+  return undefined
+})
+
 
 let boardApi: BoardApi
 const onCreated = (api: BoardApi) => {
@@ -66,7 +82,7 @@ const onMoved = (move: MoveEvent) => {
 
 <template>
   <n-flex justify="center" :style="{ flexDirection: playerSide === 'black' ? 'column-reverse' : 'column' }">
-    <player-area
+    <player-area v-if="playerInfoShow"
       :player-info="playerInfoBlack"
       color="black"
       :material-diff="materialDiff"
@@ -78,12 +94,12 @@ const onMoved = (move: MoveEvent) => {
     <board-view
       :player-side="props.playerSide"
       :orientation="props.orientation"
-      :view-only="props.viewOnly"
+      :view-only="viewOnly"
       :game-id="gameId"
       :on-create="onCreated"
       :on-move="onMoved"
     />
-    <player-area
+    <player-area v-if="playerInfoShow"
       :player-info="playerInfoWhite"
       color="white"
       :material-diff="materialDiff"
