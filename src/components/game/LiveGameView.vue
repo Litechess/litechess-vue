@@ -4,13 +4,13 @@ import GameView from './GameView.vue';
 import type { BoardApi, MoveEvent } from 'vue3-chessboard';
 import { useLiveGame } from '@/composables/useLiveGame';
 import { useTimers } from '@/composables/useTimers';
-import { computed, inject, provide, watch } from 'vue';
-import { BoardKey, useBoard } from '@/composables/useBoard';
+import { computed, watch } from 'vue';
+import { type BoardState, useBoard } from '@/composables/useBoard';
 import { useServerTimeSyncStore } from '@/stores/useServerTymeSyncStore';
 import type { LiveGameResponse } from '@/types/LiveGame';
 
 const props = defineProps<{
-  stateInjected?: boolean
+  boardState?: BoardState
   playerInfoShow?: boolean
   orientation?: PlayerSide
   playerSide?: PlayerSide
@@ -21,9 +21,7 @@ const props = defineProps<{
   onTimerFinish?: (side: PlayerSide) => void
 }>()
 
-const boardState = props.stateInjected ? inject(BoardKey) : useBoard()
-if(boardState === undefined) throw new Error('boardState is undefined')
-provide(BoardKey, boardState)
+const boardState = props.boardState ?? useBoard()
 
 const liveGame = useLiveGame()
 const timers = useTimers()
@@ -126,7 +124,7 @@ watch(() => props.chessParty, (party) => {
 
 <template>
   <game-view
-    state-injected
+    :board-state="boardState"
     :chess-party="props.chessParty"
     :timer-show="timerShow"
     :black-timer="timers.black.value"
