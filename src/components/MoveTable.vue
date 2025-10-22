@@ -9,11 +9,11 @@ interface Props {
   moves: readonly string[]
   selectMovePly: number
   gameStatus: GameStatus
+  moveClick?: (ply: number) => void
 }
 
 const props = defineProps<Props>()
 const { moves } = toRefs(props)
-const emit = defineEmits<{(e: 'moveClick', ply: number): void}>()
 const moveRows = computed(() => {
   const rows = []
   for (let i = 0; i < props.moves.length; i += 2) {
@@ -51,9 +51,12 @@ watch(
   { deep: true },
 )
 
-function onMoveClick(moveIndex: number) {
-  emit('moveClick', moveIndex + 1)
-}
+watch(
+  () => props.gameStatus,
+  () => {
+    scrollToBottom()
+  }
+)
 
 function getMoveView(move: string | null): VNode {
   if (move == null) return h(NText, { depth: 3 })
@@ -67,7 +70,7 @@ function getMoveView(move: string | null): VNode {
 
 <template>
   <n-scrollbar ref="scrollbarRef" style="max-height: 42em; min-height: 42em">
-    <n-table :striped="true" size="large" v-if ="moveRows.length > 0">
+    <n-table :striped="true" size="large" v-if ="moveRows.length > 0 || props.gameStatus !== 'NOT_FINISHED'">
       <tbody>
         <tr v-for="row in moveRows" :key="row.moveNumber">
           <td style="width: 1.45em; line-height: 0.9">{{ row.moveNumber }}.</td>
@@ -76,7 +79,7 @@ function getMoveView(move: string | null): VNode {
               :class="{ highlighted: row.whiteIndex == props.selectMovePly - 1 }"
               :size="2"
               style="padding: 2px 5px 2px 5px; cursor: pointer"
-              @click="onMoveClick(row.whiteIndex)"
+              @click="props.moveClick?.(row.whiteIndex + 1)"
               inline
             >
               <component :is="getMoveView(row.white)" />
@@ -87,7 +90,7 @@ function getMoveView(move: string | null): VNode {
               :size="2"
               inline
               style="padding: 2px 5px 2px 5px; cursor: pointer"
-              @click="onMoveClick(row.blackIndex)"
+              @click="props.moveClick?.(row.blackIndex + 1)"
               :class="{ highlighted: row.blackIndex == props.selectMovePly - 1 }"
             >
               <component :is="getMoveView(row.black)" />

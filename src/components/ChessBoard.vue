@@ -1,11 +1,10 @@
 <script setup lang="ts">
 
-import { useBoard, type BoardState } from '@/composables/useBoard'
 import { BoardApi, TheChessboard, type BoardConfig, type MoveEvent } from 'vue3-chessboard'
 import 'vue3-chessboard/style.css'
 
 interface Props {
-  boardCreated?: (api: BoardState) => void
+  boardCreated?: (api: BoardApi) => void
   playerColor?: "white" | "black" | undefined
   move?: (move: MoveEvent) => void
   boardConfig?: BoardConfig
@@ -13,15 +12,11 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const boardState = useBoard()
-
 const onCreated = (api: BoardApi) => {
-  boardState.setBoardApi(api)
-  props.boardCreated?.(boardState)
+  props.boardCreated?.(api)
 }
 
 const onMoved = (move: MoveEvent) => {
-  boardState.updateState()
   props.move?.(move)
 }
 

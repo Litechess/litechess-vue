@@ -15,6 +15,7 @@ export function useBoard() {
   const openingName = ref('Start position')
   const currentTurn: Ref<PlayerSide> = ref('white')
   const currentPly: Ref<number> = ref(1)
+  const currentViewPly: Ref<number> = ref(1)
   const materialDiff: Ref<number> = ref(0)
   const gameStatus: Ref<GameStatus> = ref('NOT_FINISHED')
 
@@ -23,6 +24,7 @@ export function useBoard() {
     updateState()
   }
   function updateState() {
+    if(_boardApi == null) return
     moves.value = _boardApi.getHistory()
     const pieces: CapturedPieces = _boardApi.getCapturedPieces()
     takedPieceBlack.value = pieces.black
@@ -33,6 +35,7 @@ export function useBoard() {
       else openingName.value = 'Start position'
     })
     currentPly.value = _boardApi.getCurrentPlyNumber()
+    stopView()
     materialDiff.value = _boardApi.getMaterialCount().materialDiff
     gameStatus.value = _getGameStatus(_boardApi)
   }
@@ -50,6 +53,31 @@ export function useBoard() {
     updateState()
   }
 
+  function viewNext() {
+    if(currentViewPly.value == currentPly.value) return
+    currentViewPly.value = currentViewPly.value + 1
+    _boardApi?.viewNext()
+  }
+
+  function stopView() {
+    currentViewPly.value = currentPly.value
+    _boardApi?.stopViewingHistory()
+  }
+
+  function viewPrevious() {
+    if(currentViewPly.value == 1) return
+    currentViewPly.value = currentViewPly.value - 1
+    _boardApi?.viewPrevious()
+  }
+
+  function viewPly(ply: number) {
+    console.log(ply)
+    if(ply <= currentPly.value && ply >= 1) {
+      currentViewPly.value = ply
+      _boardApi?.viewHistory(ply)
+    }
+  }
+
   return {
     openingName: readonly(openingName),
     currentTurn: readonly(currentTurn),
@@ -59,6 +87,11 @@ export function useBoard() {
     takedPieceBlack: readonly(takedPieceBlack),
     takedPieceWhite: readonly(takedPieceWhite),
     moves: readonly(moves),
+    currentViewPly: readonly(currentViewPly),
+    stopView,
+    viewNext,
+    viewPly,
+    viewPrevious,
     setPosition,
     setBoardApi,
     updateState

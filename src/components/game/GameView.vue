@@ -2,14 +2,14 @@
 import type { ChessParty, PlayerSide, Timer } from '@/types/ChessParty'
 import BoardView from './BoardView.vue'
 import PlayerArea from './PlayerArea.vue'
-import { computed, inject } from 'vue'
+import { computed } from 'vue'
 import type { BoardApi, MoveEvent } from 'vue3-chessboard'
-import { BoardKey, useBoard } from '@/composables/useBoard'
+import { type BoardState, useBoard } from '@/composables/useBoard'
 import { NFlex } from 'naive-ui'
 
 
 const props = defineProps<{
-  stateInjected?: boolean
+  boardState?: BoardState
   whiteTimer?: Timer
   blackTimer?: Timer
   timerShow?: boolean
@@ -24,8 +24,7 @@ const props = defineProps<{
 }>()
 
 
-console.log("INJECTED: " + props.stateInjected)
-const boardState = props.stateInjected ? inject(BoardKey, undefined) : useBoard()
+const boardState = props.boardState ?? useBoard()
 
 const materialDiff = computed(() => {
   return boardState ? boardState.materialDiff.value : undefined
@@ -69,6 +68,7 @@ const onCreated = (api: BoardApi) => {
   boardState?.setBoardApi(api)
   boardApi = api
   if(props.chessParty) api.loadPgn(props.chessParty.moves.map((m) => m.san).join(' '))
+  boardState?.updateState()
   props.onCreate?.(api)
 }
 
