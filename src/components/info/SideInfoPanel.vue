@@ -5,13 +5,14 @@ import GameInfoView from './GameInfoView.vue';
 import PieceText from '../PieceText.vue';
 import MatchmakingView from './MatchmakingView.vue';
 import ImageText from '../ImageText.vue';
-import type { GameStatus } from '@/types/ChessParty';
+import type { ChessParty, GameStatus } from '@/types/ChessParty';
 import type { BoardState } from '@/composables/useBoard';
 
 const props = defineProps<{
   boardState: BoardState
   gameStatus?: GameStatus
   gameId?: string
+  activeGames?: readonly ChessParty[]
 }>()
 
 const piecePane = h(PieceText, {
@@ -71,7 +72,9 @@ watch(
         :name="MATCHMAKING_TAB_NAME"
         :tab="matchmakingTab"
         display-directive="show:lazy">
-        <matchmaking-view />
+        <matchmaking-view
+          :active-games="props.activeGames"
+          :current-game-id="props.gameId"/>
       </n-tab-pane>
     </n-tabs>
   </n-card>

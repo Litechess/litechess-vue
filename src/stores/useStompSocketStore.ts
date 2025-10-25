@@ -8,7 +8,7 @@ export type SubscriptionCallback = (payload: IMessage) => void
 export type SubscriptionInfo = {
   id: string
   unsubscribe: () => void
-  callback: SubscriptionCallback
+  callbacks: Set<SubscriptionCallback>
   destination: string
   personal: boolean
 }
@@ -22,12 +22,9 @@ export type PendingMessage = {
   payload: string
 }
 
-// suport 1 sub on one dist
-// TODO refactor on many sub on one dist if neccessary
-// TODO reconnect a couple of hours for revalidate access token
 export const useStompSocketStore = defineStore('stompWebSocket', () => {
-  const BROKER_URL: string = 'http://localhost:8080/ws'
-  const DEFAULT_RECONNECT_DELAY: number = 2000
+  const BROKER_URL = 'http://localhost:8080/ws'
+  const DEFAULT_RECONNECT_DELAY = 2000
   const TOPIC_PREFIX = '/topic'
   const APP_PREFIX = '/app'
   const USER_PREFIX = '/user'
@@ -51,26 +48,30 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
     return headers
   }
 
-  const connect = async (reconnectDelay: number = DEFAULT_RECONNECT_DELAY) => {
-    if (isConnected.value === true) await disconnect()
+  const connect = async (reconnectDelay = DEFAULT_RECONNECT_DELAY) => {
+    if (isConnected.value) await disconnect()
+
     _client = new Client({
       brokerURL: BROKER_URL,
       reconnectDelay,
       connectHeaders: authHeaders(),
 
       onConnect: () => {
-        console.log('connected')
+        console.log('✅ STOMP connected')
         isConnected.value = true
 
+        // Обработка отложенных действий
         _pendingUnsubscriptions.forEach(internalUnsubscribe)
         _pendingUnsubscriptions.clear()
 
-        _activeSubscriptions.forEach((info, destination) => {
-          internalSubscribe(destination, info.callback, info.personal)
+        _activeSubscriptions.forEach((info) => {
+          if (!info.id) {
+            internalSubscribe(info.destination, info.personal)
+          }
         })
 
-        _pendingSubscriptions.forEach((info, destination) => {
-          subscribe(destination, info.callback, info.personal)
+        _pendingSubscriptions.forEach((info) => {
+          subscribe(info.destination, info.callback, info.personal)
         })
         _pendingSubscriptions.clear()
 
@@ -78,23 +79,11 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
       },
 
       onStompError: (frame) => {
-        console.error('Ошибка STOMP:', frame.headers['message'], frame.body)
+        console.error('❌ STOMP error:', frame.headers['message'], frame.body)
       },
     })
 
     _client.activate()
-  }
-
-  const sendPendingMessages = () => {
-    _pendingMessages.forEach((element) => {
-      internalSend(element.destination, element.payload)
-    })
-    _pendingMessages.length = 0
-  }
-
-  const setPendingMessages = (value: boolean): void => {
-    isPendingMessages.value = value
-    if (!isPendingMessages.value) _pendingMessages.length = 0
   }
 
   const disconnect = async () => {
@@ -106,81 +95,120 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
     await _client?.deactivate()
   }
 
-  const reconnect = () => {
-    _client?.activate()
+  const reconnect = () => _client?.activate()
+
+  const sendPendingMessages = () => {
+    _pendingMessages.forEach((element) => {
+      internalSend(element.destination, element.payload)
+    })
+    _pendingMessages.length = 0
   }
 
-  const internalSubscribe = (
-    destination: string,
-    callback: SubscriptionCallback,
-    personal: boolean,
-  ): StompSubscription => {
-    const PERSONAL_PREFIX = personal ? USER_PREFIX : ""
-    return _client!.subscribe(`${PERSONAL_PREFIX}${TOPIC_PREFIX}${destination}`, (message: IMessage) =>
-      callback(message),
-    )
+  const setPendingMessages = (value: boolean) => {
+    isPendingMessages.value = value
+    if (!value) _pendingMessages.length = 0
   }
 
+  // --- 🔹 Подписка на тему внутри STOMP ---
+  const internalSubscribe = (destination: string, personal: boolean): StompSubscription => {
+    const prefix = personal ? USER_PREFIX : ''
+    const topic = `${prefix}${TOPIC_PREFIX}${destination}`
+
+    const sub = _client!.subscribe(topic, (message: IMessage) => {
+      const info = _activeSubscriptions.get(destination)
+      if (info) {
+        info.callbacks.forEach((cb) => {
+          try {
+            cb(message)
+          } catch (err) {
+            console.error('STOMP callback error:', err)
+          }
+        })
+      }
+    })
+
+    return sub
+  }
+
+  // --- 🔹 Публичный subscribe ---
   const subscribe = (
     destination: string,
     callback: SubscriptionCallback,
-    personal: boolean = false,
-  ): SubscriptionInfo | null => {
-    if (isConnected.value === false) {
+    personal = false,
+  ): (() => void) | null => {
+    if (!isConnected.value) {
       _pendingSubscriptions.set(destination, { destination, callback, personal })
       return null
     }
 
-    if (_activeSubscriptions.has(destination)) {
-      const subInfo: SubscriptionInfo = _activeSubscriptions.get(destination)!
-      if (subInfo.personal == personal) {
-        _activeSubscriptions.get(destination)!.unsubscribe()
+    let info = _activeSubscriptions.get(destination)
+
+    if (!info) {
+      // Первая подписка на этот destination
+      const stompSub = internalSubscribe(destination, personal)
+      info = {
+        id: stompSub.id,
+        unsubscribe: stompSub.unsubscribe,
+        callbacks: new Set([callback]),
+        destination,
+        personal,
       }
+      _activeSubscriptions.set(destination, info)
+    } else {
+      // Уже есть подписка → просто добавляем новый колбэк
+      info.callbacks.add(callback)
     }
 
-    const info: StompSubscription = internalSubscribe(destination, callback, personal)
-    const fullInfo = {
-      id: info.id,
-      unsubscribe: info.unsubscribe,
-      callback,
-      destination,
-      personal,
-    }
+    console.log(_activeSubscriptions)
 
-    _activeSubscriptions.set(destination, fullInfo)
-    return fullInfo
+    // Возвращаем функцию отписки конкретного обработчика
+    return () => unsubscribe(destination, callback)
   }
 
+  // --- 🔹 Внутреннее удаление подписки ---
   const internalUnsubscribe = (destination: string) => {
-    if (!_activeSubscriptions.has(destination)) return
-    _activeSubscriptions.get(destination)!.unsubscribe()
+    const info = _activeSubscriptions.get(destination)
+    if (!info) return
+    info.unsubscribe()
     _activeSubscriptions.delete(destination)
   }
 
-  const unsubscribe = (destination: string) => {
-    if (isConnected.value === false) {
+  // --- 🔹 Отписка обработчика / всего топика ---
+  const unsubscribe = (destination: string, callback?: SubscriptionCallback) => {
+    const info = _activeSubscriptions.get(destination)
+
+    if (!isConnected.value) {
       _pendingUnsubscriptions.add(destination)
       return
     }
 
-    internalUnsubscribe(destination)
+    if (!info) return
+
+    if (callback) {
+      info.callbacks.delete(callback)
+      // если нет обработчиков — полностью отписываемся
+      if (info.callbacks.size === 0) {
+        internalUnsubscribe(destination)
+      }
+    } else {
+      // если callback не указан — снимаем подписку целиком
+      internalUnsubscribe(destination)
+    }
   }
 
-  const internalSend = (destination: string, payload: string): void => {
+  const internalSend = (destination: string, payload: string) => {
     const message: IPublishParams = {
       destination: `${APP_PREFIX}${destination}`,
       body: payload,
     }
-
     _client?.publish(message)
   }
 
-  const send = (destination: string, payload: string): void => {
-    if (isConnected.value === false) {
+  const send = (destination: string, payload: string) => {
+    if (!isConnected.value) {
       if (isPendingMessages.value) _pendingMessages.push({ destination, payload })
       return
     }
-
     internalSend(destination, payload)
   }
 

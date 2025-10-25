@@ -1,346 +1,104 @@
 <script setup lang="ts">
-// TODO ONLY FOR DEV TESTING , DELETE FROM ROUTER TO
-import { NFlex, NCard, NTabs, NTabPane, NText, NButton, NScrollbar } from 'naive-ui'
-import PlayerBoardInfo from '@/components/PlayerBoardInfo.vue'
-import { computed, reactive, ref, watch, type Ref } from 'vue'
-import { type BoardApi, type BoardConfig, type MoveEvent } from 'vue3-chessboard'
-import { h } from 'vue'
-import MoveTable from '@/components/MoveTable.vue'
-import ChessBoard from '@/components/ChessBoard.vue'
-import { ArrowIcon, EqualIcon } from '@/components/icon'
-import PieceText from '@/components/PieceText.vue'
-import GameTimer from '@/components/GameTimer.vue'
 import { useApi } from '@/composables/useApi'
-import { type ChessParty, type PlayerSide } from '@/types/ChessParty'
-import { onBeforeRouteUpdate, useRoute } from 'vue-router'
-import { RouterLink } from 'vue-router'
-import GameCard from '@/components/GameCard.vue'
-import { useAuthStore } from '@/stores/useAuthStore'
-import FindGameButton from '@/components/FindGameButton.vue'
-import ImageText from '@/components/ImageText.vue'
-import type { ChessPartyFilter } from '@/types/Requests'
-import { useLiveGame } from '@/composables/useLiveGame'
 import { useBoard } from '@/composables/useBoard'
-import type { LiveGameResponse } from '@/types/LiveGame'
-import { useServerTimeSync } from '@/composables/useServerTimeSync'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { type ChessParty, type GameStatus, type PlayerSide } from '@/types/ChessParty'
+import { NFlex } from 'naive-ui'
+import { computed, ref, watch, type Ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { BoardApi } from 'vue3-chessboard'
+import LiveGameView from '@/components/game/LiveGameView.vue'
+import SideInfoPanel from '@/components/info/SideInfoPanel.vue'
+import { useLiveGameStore } from '@/stores/useLiveGameStore'
 
-const route = useRoute()
+const boardState = useBoard()
 const authStore = useAuthStore()
 const api = useApi()
-const boardState = useBoard()
-const liveGame = useLiveGame()
-const serverTimeSync = useServerTimeSync(10000)
-const gameIdParam: Ref<string | null> = ref(
-  route.params.gameId.length > 0 ? String(route.params.gameId) : null,
-)
+const route = useRoute()
+const liveGameStore = useLiveGameStore()
 
-const isGameLoaded = ref(false)
-const boardConfig: BoardConfig = reactive({})
-const playerWhiteName = ref('Player 1')
-const playerBlackName = ref('Player 2')
-const activeGames: Ref<ChessParty[]> = ref([])
-const selectedValueTab = ref(gameIdParam.value != null ? 'gamePanel' : 'matchmaking')
-const playerSide: Ref<PlayerSide | undefined> = ref(undefined)
-const whiteTimer = ref(0)
-const blackTimer = ref(0)
-const currentParty = ref<ChessParty | null>(null)
-
-const whiteTimerActive = computed(() => {
-  return boardState.currentTurn.value === 'white'
+const gameIdParam = computed(() => {
+  return route.params.gameId.length > 0 ? String(route.params.gameId) : undefined
 })
 
-const blackTimerActive = computed(() => {
-  return boardState.currentTurn.value === 'black'
-})
+const chessParty = ref<ChessParty | undefined>(undefined)
 
-function getRemaining(deadline: number): number {
-  return Math.max(deadline - serverTimeSync.getServerNow(), 0);
-}
-
-liveGame.setAfterSyncCallback((liveGame: LiveGameResponse) => {
-  if (currentParty.value!.timeControl != null) {
-    console.log('TRY SET TIME')
-    console.log(liveGame)
-
-    whiteTimer.value = getRemaining(liveGame.game.currentTimers.WHITE)
-    blackTimer.value = getRemaining(liveGame.game.currentTimers.BLACK)
-  }
-  boardState.updateState()
-})
-liveGame.setAfterMoveCallback((moveMessage) => {
-  if (currentParty.value!.timeControl != null) {
-
-    if(boardState.currentTurn.value === 'white'){
-      whiteTimer.value = getRemaining(moveMessage.timers.WHITE)
-    } else if(boardState.currentTurn.value === 'black'){
-      blackTimer.value = getRemaining(moveMessage.timers.BLACK)
-    }
-  }
-})
-
-const activeNonSelectedGames = computed(() => {
-  return activeGames.value.filter((game) => game.id != gameIdParam.value)
-})
-
-if (gameIdParam.value != null) {
-  loadGame(gameIdParam.value).then(() => {
-    isGameLoaded.value = true
-  })
-}
-
-async function fetchActiveGames() {
-  const filters: ChessPartyFilter = {
-    playerId: authStore.getId()!,
-  }
-
-  return api.getAllGames(filters).then((result: ChessParty[]) => {
-    activeGames.value = result
-  })
-}
-
-fetchActiveGames()
-
-async function loadGame(id: string) {
-  return api.getChessGame(id).then((result: ChessParty) => {
-    currentParty.value = result
-    if (result.white.id == authStore.getId()) playerSide.value = 'white'
-    else if (result.black.id == authStore.getId()) playerSide.value = 'black'
-    console.log(result)
-
-    boardConfig.orientation = playerSide.value
-    boardConfig.viewOnly = isViewOnly.value
-    console.log(isViewOnly.value)
-
-    playerWhiteName.value = result.white.name
-    playerBlackName.value = result.black.name
-    if (result.timeControl != null) {
-      whiteTimer.value =
-        getLastTimeFromArr(result.timerHistory, 'white') ?? result.timeControl.initTime
-      blackTimer.value =
-        getLastTimeFromArr(result.timerHistory, 'black') ?? result.timeControl.initTime
-    }
-
-    fetchActiveGames()
-  })
-}
-
-function getLastTimeFromArr(arr: number[], side: PlayerSide): number | null {
-  if (side == 'white' && arr.length >= 1)
-    return arr.length % 2 == 0 ? arr[arr.length - 2] : arr[arr.length - 1]
-  else if (side == 'black' && arr.length >= 2)
-    return arr.length % 2 == 0 ? arr[arr.length - 1] : arr[arr.length - 2]
-  return null
-}
-
-onBeforeRouteUpdate((to, from, next) => {
-  const paramId: string = to.params.gameId as string
-  if (paramId.length > 0) {
-    loadGame(paramId).then(() => {
-      gameIdParam.value = paramId
-      isGameLoaded.value = true
-      selectedValueTab.value = 'gamePanel'
-    })
-  } else {
-    gameIdParam.value = null
-    isGameLoaded.value = false
-  }
-
-  next()
-})
-
-const isViewOnly = computed(() => {
-  return (playerSide.value == undefined) == true || (currentParty.value != null && currentParty.value.status != "NOT_FINISHED")
-})
-
-// composable
-let boardApi: BoardApi
-const buttonSize: number = 35
-const notLoadedBoardConfig: BoardConfig = {
-  viewOnly: true,
-}
-
-const piecePane = h(PieceText, {
-  text: 'Game',
-  piece: 'p',
-  onClick: () => {
-    if (isGameLoaded.value == false) return
-    selectedValueTab.value = 'gamePanel'
-  },
-})
-
-const matchmakingTab = h(ImageText, {
-  text: 'Matchmaking',
-  onClick: () => {
-    selectedValueTab.value = 'matchmaking'
-  },
-})
-
-const selectedMovePly = ref(boardState.currentPly.value.valueOf())
-watch(
-  () => boardState.currentPly.value,
-  (newValue) => {
-    selectedMovePly.value = newValue
-  },
-)
-
-function moveTableClick(ply: number) {
-  selectedMovePly.value = ply
-  boardApi.viewHistory(ply)
-}
-
-function onBoardCreated(api: BoardApi) {
-  boardApi = api
-  boardApi.loadPgn(currentParty.value!.moves.map((m) => m.san).join(' '))
-  boardState.setBoardApi(api)
-  if (gameIdParam.value != null && currentParty.value!.status == "NOT_FINISHED") {
-    liveGame.subscribe(gameIdParam.value, api)
-  }
-}
-
-function onMove(move: MoveEvent) {
-  boardApi.stopViewingHistory()
-  boardState.updateState()
-  if (boardApi.getTurnColor() == playerSide.value) return
-  liveGame.sendMove(move)
-}
-
-function getOrientation(chessParty: ChessParty): PlayerSide {
+const playerSide = computed(() => {
+  if (chessParty.value === undefined) return undefined
   const userId: string = authStore.getId()!
-  const whiteId = chessParty.white.id
-  return userId == whiteId ? 'white' : 'black'
+  if (userId === chessParty.value.white.id) return 'white'
+  else if (userId === chessParty.value.black.id) return 'black'
+  return undefined
+})
+
+const orientation = computed(() => {
+  if (playerSide.value === undefined) return 'white'
+  return playerSide.value
+})
+
+const gameStatus: Ref<GameStatus | undefined> = computed(() => {
+  if (chessParty.value === undefined) return undefined
+  return chessParty.value.status
+})
+
+const viewOnly = computed(() => {
+  return (playerSide.value ? false : true) || (gameStatus.value !== "NOT_FINISHED" && gameStatus.value !== undefined)
+})
+
+const boardApi: Ref<BoardApi | undefined> = ref(undefined)
+
+const onCreate = (api: BoardApi) => {
+  boardApi.value = api
 }
 
-const viewNext = () => {
-  if (selectedMovePly.value == boardState.moves.value.length) return
-  boardApi.viewNext()
-  selectedMovePly.value = selectedMovePly.value + 1
+const onTimerFinish = (side: PlayerSide) => {
+  if(chessParty.value && side === "white") chessParty.value.status = "WIN_BLACK"
+  else if(chessParty.value && side == "black") chessParty.value.status = "WIN_WHITE"
 }
 
-const viewPrevious = () => {
-  if (selectedMovePly.value == 1) return
-  boardApi.viewPrevious()
-  selectedMovePly.value = selectedMovePly.value + -1
-}
+const showGameInfo = computed(() => {
+  return gameIdParam.value ? true : false
+})
 
-const stopView = () => {
-  boardApi.stopViewingHistory()
-  selectedMovePly.value = boardState.currentPly.value
-}
+watch(
+  gameIdParam,
+  async (id) => {
+    if (id === undefined) {
+      chessParty.value = undefined
+      return
+    }
+    const loadedParty: ChessParty = await api.getChessGame(id)
+    chessParty.value = {
+      ...loadedParty,
+      id: String(loadedParty.id),
+    }
+
+  },
+  { immediate: true },
+)
+
 </script>
 
 <template>
   <n-flex style="height: calc(100dvh - 2rem)" justify="center" align="center">
-    <n-flex :size="50" justify="center">
-      <n-flex
-        v-if="isGameLoaded"
-        :style="{ flexDirection: playerSide == 'white' ? 'column' : 'column-reverse' }"
-      >
-        <n-flex justify="space-between">
-          <player-board-info
-            color="black"
-            :name="playerBlackName"
-            avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
-            :pieces="boardState.takedPieceBlack.value"
-            :materialDiff="boardState.materialDiff.value"
-          />
-          <game-timer :active="blackTimerActive" :duration="blackTimer" :key="blackTimer"/>
-        </n-flex>
-        <chess-board
-          :player-color="playerSide"
-          :board-config="boardConfig"
-          @move="onMove"
-          @board-created="onBoardCreated"
-          :key="gameIdParam as string"
-        />
-
-        <n-flex justify="space-between">
-          <player-board-info
-            color="white"
-            :name="playerWhiteName"
-            avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
-            :pieces="boardState.takedPieceWhite.value"
-            :materialDiff="boardState.materialDiff.value"
-          />
-          <game-timer :active="whiteTimerActive" :duration="whiteTimer" :key="whiteTimer"/>
-        </n-flex>
-      </n-flex>
-      <n-flex v-else :style="{ flexDirection: 'column' }">
-        <n-flex justify="space-between">
-          <player-board-info
-            color="black"
-            name="Black"
-            avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
-            :pieces="[]"
-            :materialDiff="0"
-          />
-        </n-flex>
-        <chess-board :board-config="notLoadedBoardConfig" :key="0" />
-        <n-flex justify="space-between">
-          <player-board-info
-            color="white"
-            name="White"
-            avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
-            :pieces="[]"
-            :materialDiff="0"
-          />
-        </n-flex>
-      </n-flex>
+    <n-flex justify="center">
+      <live-game-view
+        :board-state="boardState"
+        :player-info-show="true"
+        :chess-party="chessParty"
+        :orientation="orientation"
+        :view-only="viewOnly"
+        :player-side="playerSide"
+        :on-create="onCreate"
+        :on-timer-finish="onTimerFinish"
+      />
       <n-flex>
-        <n-card>
-          <n-tabs
-            style="width: 400px"
-            type="line"
-            justify-content="center"
-            size="large"
-            :value="selectedValueTab"
-          >
-            <n-tab-pane :disabled="!isGameLoaded" name="gamePanel" :tab="piecePane">
-              <n-flex vertical justify="space-between">
-                <n-text style="font-size: 20px"> {{ boardState.openingName }}</n-text>
-                <move-table
-                  :selectMovePly="selectedMovePly"
-                  :moves="boardState.moves.value"
-                  @move-click="moveTableClick"
-                  :gameStatus="boardState.gameStatus.value"
-                />
-                <n-flex justify="center" :size="5">
-                  <n-button @click="viewPrevious">
-                    <arrow-icon :size="buttonSize" />
-                  </n-button>
-                  <n-button @click="stopView">
-                    <equal-icon :size="buttonSize" />
-                  </n-button>
-                  <n-button @click="viewNext">
-                    <arrow-icon :size="buttonSize" rotated />
-                  </n-button>
-                </n-flex>
-              </n-flex>
-            </n-tab-pane>
-            <n-tab-pane name="matchmaking" :tab="matchmakingTab" display-directive="show:lazy">
-              <n-flex vertical :size="30">
-                <find-game-button />
-                <n-flex vertical align="center">
-                  <n-text style="font-size: 18px">Active games</n-text>
-                  <n-scrollbar style="max-height: 42em; min-height: 42em">
-                    <n-flex justify="center" :size="10">
-                      <router-link
-                        :to="`/game/${activeGame.id}`"
-                        style="text-decoration: none; color: inherit"
-                        v-for="activeGame in activeNonSelectedGames"
-                        :key="activeGame.id"
-                      >
-                        <game-card
-                          :chessParty="activeGame"
-                          :orientation="getOrientation(activeGame)"
-                        />
-                      </router-link>
-                    </n-flex>
-                  </n-scrollbar>
-                </n-flex>
-              </n-flex>
-            </n-tab-pane>
-          </n-tabs>
-        </n-card>
+        <side-info-panel
+          :gameId="gameIdParam"
+          :show-game-info="showGameInfo"
+          :board-state="boardState"
+          :game-status="gameStatus"
+          :active-games="liveGameStore.activeGames"/>
       </n-flex>
     </n-flex>
   </n-flex>
