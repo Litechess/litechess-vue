@@ -1,40 +1,53 @@
 <script setup lang="ts">
 import type { ChessParty, PlayerSide } from '@/types/ChessParty'
-import ChessBoard from './ChessBoard.vue'
 import { NFlex, NCard, NText } from 'naive-ui'
-import type { BoardApi, BoardConfig } from 'vue3-chessboard'
+import LiveGameView from './game/LiveGameView.vue'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { computed } from 'vue'
 
 interface Props {
   chessParty: ChessParty
   orientation?: PlayerSide
+  boardSize?: number
+  isSelected: boolean
 }
 
 const props = defineProps<Props>()
+const authStore = useAuthStore()
 
-const viewOnlyConfig: BoardConfig = {
-  viewOnly: true,
-  orientation: props.orientation == undefined ? 'white' : props.orientation,
+function getOrientation(game: ChessParty) {
+  if (game.black.id == authStore.getId()) {
+    return 'black'
+  } else {
+    return 'white'
+  }
 }
 
-async function boardCreated(boardApi: BoardApi) {
-  boardApi.loadPgn(props.chessParty.moves.map(move => move.san).join(' '))
-}
+const orientation = computed(() => {
+  return props.orientation ?? getOrientation(props.chessParty)
+})
+
+const style = computed(() => {
+  return props.isSelected ? { 'background-color': 'rgba(37, 100, 37, 0.35)' } : {}
+})
 </script>
 
 <template>
-  <n-card>
+  <n-card :content-style="style">
     <n-flex
       vertical
       align="center"
       justify="center"
-      :style="{ flexDirection: props.orientation == 'black' ? 'column-reverse' : 'column' }"
+      :style="{ flexDirection: orientation == 'black' ? 'column-reverse' : 'column'}"
     >
       <n-text style="font-size: 18px"> {{ props.chessParty.black.name }}</n-text>
       <n-flex>
-        <chess-board
-          :board-config="viewOnlyConfig"
-          @board-created="boardCreated"
-          style="width: 300px"
+        <live-game-view
+          :chess-party="props.chessParty"
+          :view-only="true"
+          :player-info-show="false"
+          :player-side="orientation"
+          :board-size="props.boardSize"
         />
       </n-flex>
       <n-text style="font-size: 18px"> {{ props.chessParty.white.name }}</n-text>
@@ -42,4 +55,6 @@ async function boardCreated(boardApi: BoardApi) {
   </n-card>
 </template>
 
-<style scoped></style>
+<style scoped>
+
+</style>

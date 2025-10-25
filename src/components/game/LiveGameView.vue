@@ -15,6 +15,7 @@ const props = defineProps<{
   orientation?: PlayerSide
   playerSide?: PlayerSide
   viewOnly?: boolean
+  boardSize?: number
   chessParty?: ChessParty
   onCreate?: (api: BoardApi) => void
   onMove?: (move: MoveEvent) => void
@@ -135,5 +136,6 @@ watch(() => props.chessParty, (party) => {
     :player-info-show="props.playerInfoShow"
     :on-create="onCreated"
     :on-move="onMoved"
-    :on-timer-finish="onTimerFinished"/>
+    :on-timer-finish="onTimerFinished"
+    :board-size="props.boardSize"/>
 </template>

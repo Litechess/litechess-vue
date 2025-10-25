@@ -18,7 +18,7 @@ const DEFAULT_VIEW_ONLY: boolean = false
 const DEFAULT_ORIENTATION: PlayerSide = 'white'
 
 const orientation = computed<PlayerSide>(() => {
-  return props.orientation ?? DEFAULT_ORIENTATION
+  return props.orientation ?? props.playerSide ?? DEFAULT_ORIENTATION
 })
 const isViewOnly = computed(() => {
   return props.viewOnly ?? DEFAULT_VIEW_ONLY

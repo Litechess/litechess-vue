@@ -1,10 +1,10 @@
-import { useStompSocketStore, type SubscriptionInfo } from "@/stores/useStompSocketStore"
+import { useStompSocketStore } from "@/stores/useStompSocketStore"
 import { readonly, ref, shallowReactive } from "vue"
 
 const DUMMY_CREATE_REQUIEST = {
 timeControl: {
-  "initTime": 150000,
-  "increment" : 0
+  "initTime": 15000,
+  "increment" : 3000
   },
 category: "CASUAL"
 }
@@ -12,7 +12,7 @@ category: "CASUAL"
 export function useMatchQueue() {
 
   const _stompStore = useStompSocketStore()
-  let _findSubInfo: SubscriptionInfo | null = null
+  let _findSubInfo: (() => void) | null
 
   const inQueue = ref(false)
 
@@ -32,7 +32,7 @@ export function useMatchQueue() {
 
   function leaveFromQueue() {
     if(inQueue.value == false) return
-    _findSubInfo?.unsubscribe()
+    _findSubInfo!()
     inQueue.value = false
   }
 

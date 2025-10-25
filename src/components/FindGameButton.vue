@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { useMatchQueue } from '@/composables/useMatchQueue';
+import { useLiveGameStore } from '@/stores/useLiveGameStore';
 import { NButton } from 'naive-ui';
 import { ref, toRefs, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -11,9 +12,11 @@ const buttonText = ref("FIND GAME")
 const loading = ref(false)
 
 const router = useRouter()
+const activeGameStore = useLiveGameStore()
 
 const gameFindedCallback = (gameId: string) => {
-  router.push(`/test/${gameId}`)
+  activeGameStore.load(gameId)
+  router.push(`/game/${gameId}`)
 }
 
 function click() {

@@ -9,6 +9,7 @@ export function useChessSocket() {
 
   const _socketStore = useStompSocketStore()
   let currentGameId: string | null = null
+  let unsubFunction: (() => void) | null
 
   const handlers: Record<SocketMessageType, MessageHandler> = {
     move: (message) => {
@@ -40,11 +41,13 @@ export function useChessSocket() {
       unsubscribe()
     }
 
-    _socketStore.subscribe(`/game/${gameId}`, (msg) => {
+    unsubFunction =_socketStore.subscribe(`/game/${gameId}`, (msg) => {
       const message: SocketMessage = JSON.parse(msg.body)
       const messageType: SocketMessageType = message.headers['type'] as SocketMessageType
       handlers[messageType](message)
     })
+
+    if(unsubFunction == null) return
 
     currentGameId = gameId
   }
@@ -64,7 +67,7 @@ export function useChessSocket() {
   }
 
   function unsubscribe() {
-    _socketStore.unsubscribe(`/game/${currentGameId}`)
+    unsubFunction!()
     currentGameId = null
   }
 

@@ -18,6 +18,7 @@ const props = defineProps<{
   viewOnly?: boolean
   playerSide?: PlayerSide
   chessParty?: ChessParty
+  boardSize?: number
   onCreate?: (api: BoardApi) => void
   onMove?: (move: MoveEvent) => void
   onTimerFinish?: (side: PlayerSide) => void
@@ -62,6 +63,13 @@ const viewOnly = computed(() => {
   return undefined
 })
 
+const boardSizeStyle = computed(() => {
+  if (props.boardSize !== undefined) {
+    return { width: `${props.boardSize}px` }
+  }
+  return {}
+})
+
 
 let boardApi: BoardApi
 const onCreated = (api: BoardApi) => {
@@ -98,6 +106,7 @@ const onMoved = (move: MoveEvent) => {
       :game-id="gameId"
       :on-create="onCreated"
       :on-move="onMoved"
+      :style="boardSizeStyle"
     />
     <player-area v-if="playerInfoShow"
       :player-info="playerInfoWhite"
