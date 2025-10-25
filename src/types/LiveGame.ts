@@ -2,7 +2,7 @@ import type { PlayerSide } from "./ChessParty";
 import type { Move } from "./MoveRequest";
 
 export type LiveGame = {
-  id: number;
+  id: string;
   moves: Move[];
   playerSides: Record<PlayerSide, string>;
   timerHistory: number[];

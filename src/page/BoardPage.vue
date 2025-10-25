@@ -56,6 +56,12 @@ const onTimerFinish = (side: PlayerSide) => {
   else if(chessParty.value && side == "black") chessParty.value.status = "WIN_WHITE"
 }
 
+const onMove = () => {
+  if(boardState.gameStatus.value !== "NOT_FINISHED" && chessParty.value) {
+    chessParty.value.status = boardState.gameStatus.value
+  }
+}
+
 const showGameInfo = computed(() => {
   return gameIdParam.value ? true : false
 })
@@ -90,6 +96,7 @@ watch(
         :view-only="viewOnly"
         :player-side="playerSide"
         :on-create="onCreate"
+        :on-move="onMove"
         :on-timer-finish="onTimerFinish"
       />
       <n-flex>

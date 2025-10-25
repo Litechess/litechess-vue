@@ -80,8 +80,8 @@ const onCreated = (api: BoardApi) => {
 }
 
 const onMoved = (move: MoveEvent) => {
-  timers.swap()
-  console.log(boardState.currentTurn.value === props.playerSide)
+  if(boardState.gameStatus.value === 'NOT_FINISHED') timers.swap()
+  else timers.stop()
   if (boardState.currentTurn.value === props.playerSide) return
   liveGame.sendMove(move)
 
@@ -95,7 +95,7 @@ const onTimerFinished = (side: PlayerSide) => {
     timers.white.value.duration = 0
   }
   else {
-    timers.white.value.duration = 0
+    timers.black.value.duration = 0
   }
   props.onTimerFinish?.(side)
 }
@@ -114,8 +114,8 @@ watch(() => props.chessParty, (party) => {
       const lastTimerBlack =
         getLastTimerValue(party.timerHistory, 'black') ??
         party.timeControl.initTime
-      timers.white.value.duration = party.status === 'WIN_BLACK' ? 0 : lastTimerWhite
-      timers.black.value.duration = party.status === 'WIN_WHITE' ? 0 : lastTimerBlack
+      timers.white.value.duration = lastTimerWhite
+      timers.black.value.duration = lastTimerBlack
     }
 
     console.log(party)

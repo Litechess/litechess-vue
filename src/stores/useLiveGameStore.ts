@@ -15,10 +15,7 @@ export const useLiveGameStore = defineStore('liveGame', () => {
 
   async function load(gameId: string): Promise<ChessParty | void> {
     return api.getChessGame(gameId).then((game: ChessParty) => {
-      add({
-        ...game,
-        id: String(game.id)
-      })
+      add(game)
     })
   }
 
@@ -49,12 +46,6 @@ export const useLiveGameStore = defineStore('liveGame', () => {
   .then((result: ChessParty[]) => {
     const filteredResult = result.filter((game) => {
       return game.status === 'NOT_FINISHED'
-    })
-    .map((game) => {
-      return {
-        ...game,
-        id: String(game.id),
-      }
     })
 
     filteredResult.forEach((game: ChessParty) => {

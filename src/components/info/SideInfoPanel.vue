@@ -37,9 +37,9 @@ const selectedTab: Ref<undefined | string> = ref(undefined)
 
 watch(
   gameId,
-  (newVal) => {
+  (oldVal, newVal) => {
     if (newVal) {
-      selectedTab.value = GAME_TAB_NAME
+      selectedTab.value = oldVal ? selectedTab.value : GAME_TAB_NAME
     } else {
       selectedTab.value = MATCHMAKING_TAB_NAME
     }
