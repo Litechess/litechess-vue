@@ -9,7 +9,7 @@ import type { ChessParty, GameStatus } from '@/types/ChessParty';
 import type { BoardState } from '@/composables/useBoard';
 
 const props = defineProps<{
-  boardState: BoardState
+  boardState?: BoardState
   gameStatus?: GameStatus
   gameId?: string
   activeGames?: readonly ChessParty[]
@@ -23,6 +23,8 @@ const piecePane = h(PieceText, {
 const matchmakingTab = h(ImageText, {
   text: 'Matchmaking'
 })
+
+const boardState = computed(() => props.boardState)
 
 const tabRef = ref<TabsInst | null>(null)
 
@@ -64,8 +66,8 @@ watch(
       <n-tab-pane v-if="gameId"
         :name="GAME_TAB_NAME"
         :tab="piecePane">
-        <game-info-view
-          :board-state="props.boardState"
+        <game-info-view v-if="boardState"
+          :board-state="boardState"
           :game-status="props.gameStatus"/>
       </n-tab-pane>
       <n-tab-pane

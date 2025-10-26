@@ -89,6 +89,7 @@ watch(
   <n-flex style="height: calc(100dvh - 2rem)" justify="center" align="center">
     <n-flex justify="center">
       <live-game-view
+        send-move
         :board-state="boardState"
         :player-info-show="true"
         :chess-party="chessParty"

@@ -3,7 +3,7 @@ import { readonly, ref, shallowReactive } from "vue"
 
 const DUMMY_CREATE_REQUIEST = {
 timeControl: {
-  "initTime": 15000,
+  "initTime": 150000,
   "increment" : 3000
   },
 category: "CASUAL"
@@ -22,7 +22,7 @@ export function useMatchQueue() {
       console.log("GAME FINDED")
       const gameId = JSON.parse(msg.body).payload.gameId
       gameFindedCallback(gameId)
-      inQueue.value = false
+      leaveFromQueue()
 
     }, true)
     if(_findSubInfo == null) return
@@ -32,6 +32,7 @@ export function useMatchQueue() {
 
   function leaveFromQueue() {
     if(inQueue.value == false) return
+    console.log('unsubqueue')
     _findSubInfo!()
     inQueue.value = false
   }

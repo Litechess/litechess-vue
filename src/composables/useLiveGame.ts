@@ -33,6 +33,7 @@ export function useLiveGame() {
         return
       }
 
+      console.log("apply move" + _board.getTurnColor())
       _board.move(moveMessage.move.san)
 
       if(afterMoveCallback !== null) {

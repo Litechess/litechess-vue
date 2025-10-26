@@ -10,6 +10,7 @@ import { useServerTimeSyncStore } from '@/stores/useServerTymeSyncStore';
 import type { LiveGameResponse } from '@/types/LiveGame';
 
 const props = defineProps<{
+  sendMove?: boolean // todo refactor
   boardState?: BoardState
   playerInfoShow?: boolean
   orientation?: PlayerSide
@@ -30,6 +31,10 @@ const serverTimeStore = useServerTimeSyncStore()
 
 const timerShow = computed(() => {
   return !!props.chessParty?.timeControl
+})
+
+const sendMove = computed(() => {
+  return props.sendMove ?? false
 })
 
 function getRemaining(deadline: number): number {
@@ -65,6 +70,7 @@ liveGame.setAfterMoveCallback((moveMessage) => {
     timers.white.value.duration = getRemaining(moveMessage.timers.WHITE)
     timers.black.value.duration = getRemaining(moveMessage.timers.BLACK)
   }
+  boardState.updateState()
 })
 
 const onCreated = (api: BoardApi) => {
@@ -82,8 +88,7 @@ const onCreated = (api: BoardApi) => {
 const onMoved = (move: MoveEvent) => {
   if(boardState.gameStatus.value === 'NOT_FINISHED') timers.swap()
   else timers.stop()
-  if (boardState.currentTurn.value === props.playerSide) return
-  liveGame.sendMove(move)
+  if(sendMove.value && boardState.currentTurn.value !== props.playerSide) liveGame.sendMove(move)
 
   props.onMove?.(move)
 }

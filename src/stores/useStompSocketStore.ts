@@ -169,12 +169,16 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
   const internalUnsubscribe = (destination: string) => {
     const info = _activeSubscriptions.get(destination)
     if (!info) return
-    info.unsubscribe()
+
+    // Передаём destination вручную, чтобы сервер его получил в UNSUBSCRIBE
+    _client?.unsubscribe(info.id, { destination: info.destination })
+
     _activeSubscriptions.delete(destination)
   }
 
   // --- 🔹 Отписка обработчика / всего топика ---
   const unsubscribe = (destination: string, callback?: SubscriptionCallback) => {
+    console.log('START UNSUB')
     const info = _activeSubscriptions.get(destination)
 
     if (!isConnected.value) {
@@ -194,6 +198,8 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
       // если callback не указан — снимаем подписку целиком
       internalUnsubscribe(destination)
     }
+
+    console.log(_activeSubscriptions)
   }
 
   const internalSend = (destination: string, payload: string) => {

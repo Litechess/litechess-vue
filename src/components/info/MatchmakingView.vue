@@ -16,7 +16,7 @@ const props = defineProps<{
   <n-flex vertical>
     <find-game-button />
     <n-flex justify="center">
-        <n-text style="font-size: 18px">Active games</n-text>
+        <n-text style="font-size: 18px" v-if="props.activeGames && props.activeGames.length > 0">Active games</n-text>
         <n-scrollbar style="max-height: 42em; min-height: 42em">
           <n-flex justify="center" :size="10">
             <router-link

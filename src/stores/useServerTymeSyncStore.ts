@@ -23,7 +23,7 @@ export const useServerTimeSyncStore = defineStore('serverTimeSync', () => {
    */
   async function fetchServerNow(): Promise<number> {
     const res: ServerNowResponse = await api.getServerTime()
-    return res.serverNow // ожидается время в миллисекундах (Instant.toEpochMilli)
+    return res.serverNow
   }
 
   /**
@@ -49,7 +49,7 @@ export const useServerTimeSyncStore = defineStore('serverTimeSync', () => {
   /**
    * Запустить автоматическую синхронизацию с заданным интервалом
    */
-  function start(intervalMs = 10000): void {
+  function start(intervalMs = 100000): void {
     stop()
     sync()
     timer = setInterval(sync, intervalMs)
@@ -69,7 +69,8 @@ export const useServerTimeSyncStore = defineStore('serverTimeSync', () => {
    * Получить текущее серверное время (локально, с учётом offset)
    */
   function getServerNow(): number {
-    return Date.now() + offset.value
+    console.log(offset.value + " OFFSET")
+    return Date.now()
   }
 
   // Автоматический запуск при монтировании
