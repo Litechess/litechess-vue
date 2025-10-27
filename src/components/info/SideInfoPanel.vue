@@ -54,7 +54,7 @@ watch(
 </script>
 
 <template>
-  <n-card>
+  <n-card style="height: 100%">
     <n-tabs
       style="width: 400px"
       type="line"
@@ -74,9 +74,9 @@ watch(
         :name="MATCHMAKING_TAB_NAME"
         :tab="matchmakingTab"
         display-directive="show:lazy">
-        <matchmaking-view
-          :active-games="props.activeGames"
-          :current-game-id="props.gameId"/>
+          <matchmaking-view
+            :active-games="props.activeGames"
+            :current-game-id="props.gameId"/>
       </n-tab-pane>
     </n-tabs>
   </n-card>

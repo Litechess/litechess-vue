@@ -2,9 +2,15 @@
 
 import { useMatchQueue } from '@/composables/useMatchQueue';
 import { useLiveGameStore } from '@/stores/useLiveGameStore';
+import type { TimeControl } from '@/types/ChessParty';
 import { NButton } from 'naive-ui';
 import { ref, toRefs, watch } from 'vue';
 import { useRouter } from 'vue-router';
+
+const props = defineProps<{
+  onQueue?: (inQueue: boolean) => void
+  timeControl: TimeControl
+}>();
 
 const matchQueue = useMatchQueue()
 const { inQueue } = toRefs(matchQueue)
@@ -21,7 +27,7 @@ const gameFindedCallback = (gameId: string) => {
 
 function click() {
   if(inQueue.value == false) {
-    matchQueue.enterInQueue(gameFindedCallback)
+    matchQueue.enterInQueue(gameFindedCallback, props.timeControl)
   } else {
     console.log("Leave")
     matchQueue.leaveFromQueue()
@@ -31,15 +37,10 @@ function click() {
 watch(
   inQueue,
   (newValue) => {
-    if(newValue) {
-      buttonText.value = "CANCEL"
-      loading.value = true
-    }
-    else {
-      buttonText.value = "FIND GAME"
-      loading.value = false
-    }
-  }
+    buttonText.value = newValue ? "CANCEL" : "FIND GAME"
+    loading.value = newValue
+    props.onQueue?.(newValue)
+  }, { immediate: true}
 )
 
 

@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { NFlex } from 'naive-ui';
 
 </script>
 
 <template>
- <div>
+  <n-flex>
 
- </div>
+  </n-flex>
 </template>
 
 <style scoped>

@@ -1,40 +1,35 @@
 <script setup lang="ts">
-import { NFlex, NText, NScrollbar } from 'naive-ui';
+import { NFlex } from 'naive-ui';
 import FindGameButton from '../FindGameButton.vue';
-import { RouterLink } from 'vue-router';
 import type { ChessParty } from '@/types/ChessParty';
-import GameCard from '../GameCard.vue';
+import TimeControlCollapseButton from './TimeControlCollapseButton.vue';
+import { ref } from 'vue';
+import { TIME_CONTROLS } from '@/types/ChessParty';
+import ActiveGameCollapseButton from './ActiveGameCollapseButton.vue';
+import { NScrollbar } from 'naive-ui';
 
 const props = defineProps<{
   currentGameId?: string
   activeGames?: readonly ChessParty[]
 }>()
 
+const timeControl = ref(TIME_CONTROLS.Rapid[1])
+const isActiveTimes = ref(false)
+
+const onQueue = (inQueue: boolean) => {
+ isActiveTimes.value = !inQueue
+}
+
 </script>
 
 <template>
-  <n-flex vertical>
-    <find-game-button />
-    <n-flex justify="center">
-        <n-text style="font-size: 18px" v-if="props.activeGames && props.activeGames.length > 0">Active games</n-text>
-        <n-scrollbar style="max-height: 42em; min-height: 42em">
-          <n-flex justify="center" :size="10">
-            <router-link
-              :to="`/game/${activeGame.id}`"
-              style="text-decoration: none; color: inherit"
-              v-for="activeGame in props.activeGames"
-              :key="activeGame.id"
-            >
-              <game-card
-                :board-size="300"
-                :isSelected="props.currentGameId === activeGame.id"
-                :chessParty="activeGame"
-              />
-            </router-link>
-          </n-flex>
-        </n-scrollbar>
+  <n-scrollbar style="max-height: 690px">
+    <n-flex vertical>
+      <find-game-button :on-queue="onQueue" :time-control="timeControl"/>
+      <time-control-collapse-button v-model="timeControl" :is-active="isActiveTimes"/>
+      <active-game-collapse-button :selected-game-id="props.currentGameId"/>
     </n-flex>
-  </n-flex>
+  </n-scrollbar>
 </template>
 
 <style scoped>
