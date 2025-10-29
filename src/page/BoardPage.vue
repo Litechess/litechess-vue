@@ -2,7 +2,7 @@
 import { useApi } from '@/composables/useApi'
 import { useBoard } from '@/composables/useBoard'
 import { useAuthStore } from '@/stores/useAuthStore'
-import { type ChessParty, type GameStatus, type PlayerSide } from '@/types/ChessParty'
+import { type ChessParty, type GameStatus } from '@/types/ChessParty'
 import { NFlex } from 'naive-ui'
 import { computed, ref, watch, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
@@ -11,6 +11,7 @@ import LiveGameView from '@/components/game/LiveGameView.vue'
 import SideInfoPanel from '@/components/info/SideInfoPanel.vue'
 import { useLiveGameStore } from '@/stores/useLiveGameStore'
 import type { useLiveGame } from '@/composables/useLiveGame'
+import type { GameResult } from '@/types/MoveRequest'
 
 const boardState = useBoard()
 const authStore = useAuthStore()
@@ -59,16 +60,11 @@ const onCreate = (api: BoardApi, liveGamee: ReturnType<typeof useLiveGame>): voi
 
 }
 
-const onTimerFinish = (side: PlayerSide) => {
-  if(chessParty.value && side === "white") chessParty.value.status = "WIN_BLACK"
-  else if(chessParty.value && side == "black") chessParty.value.status = "WIN_WHITE"
+const onGameFinish = (gameResult: GameResult) => {
+  if(chessParty.value === undefined) return
+  chessParty.value.status = gameResult.status
 }
 
-const onMove = () => {
-  if(boardState.gameStatus.value !== "NOT_FINISHED" && chessParty.value) {
-    chessParty.value.status = boardState.gameStatus.value
-  }
-}
 
 const showGameInfo = computed(() => {
   return gameIdParam.value ? true : false
@@ -106,8 +102,7 @@ watch(
         :view-only="viewOnly"
         :player-side="playerSide"
         :on-create="onCreate"
-        :on-move="onMove"
-        :on-timer-finish="onTimerFinish"
+        :on-game-finish="onGameFinish"
       />
       <n-flex>
         <side-info-panel

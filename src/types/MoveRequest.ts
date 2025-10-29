@@ -1,4 +1,4 @@
-import type { GameStatus } from './ChessParty'
+import type { GameEventType, GameStatus } from './ChessParty'
 export type Move = {
   from: string
   to: string
@@ -14,6 +14,10 @@ export type MoveMessage = {
     BLACK: number
   }
   serverNow: number
+}
+
+export type GameEventRequest = {
+  event: GameEventType
 }
 
 export type GameResult = {

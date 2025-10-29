@@ -32,7 +32,11 @@ export type TimeControls = {
   Rapid: TimeControl[];
 };
 export type PlayerSide = 'white' | 'black'
-export type GameStatus = 'DRAW' | 'WIN_WHITE' | 'WIN_BLACK' | 'NOT_FINISHED'
+export type GameStatus =
+'DRAW' |'WIN_WHITE'| 'WIN_BLACK' | 'NOT_FINISHED'
+| 'TIMEOUT_WIN_WHITE' | 'TIMEOUT_WIN_BLACK' | 'SURRENDER_WIN_WHITE' | 'SURRENDER_WIN_BLACK'
+
+export type GameEventType = 'SURRENDER' | 'DRAW'
 export type PieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k'
 
 export const TIME_CONTROLS: TimeControls = {

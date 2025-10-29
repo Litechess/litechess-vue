@@ -1,6 +1,6 @@
 import { BoardApi, type MoveEvent } from 'vue3-chessboard'
 import { useChessSocket } from './useChessSocket'
-import type { Move, MoveMessage } from '@/types/MoveRequest'
+import type { GameResult, Move, MoveMessage } from '@/types/MoveRequest'
 import { useApi } from './useApi'
 import type { LiveGameResponse } from '@/types/LiveGame'
 
@@ -15,6 +15,7 @@ export function useLiveGame() {
 
   let afterMoveCallback: ((move: MoveMessage, isApplied: boolean) => void) | null = null
   let afterSyncCallback: ((liveGame: LiveGameResponse) => void) | null = null
+  let afterGameFinishCallback: ((gameResult: GameResult) => void) | null = null
 
   _init()
 
@@ -41,9 +42,10 @@ export function useLiveGame() {
       }
     })
 
-    _chessSocket.setGameFinishCallback(() => {
+    _chessSocket.setGameFinishCallback((gameResult: GameResult) => {
       console.log("game end")
       unsubcribe()
+      afterGameFinishCallback?.(gameResult)
     })
   }
 
@@ -94,6 +96,10 @@ export function useLiveGame() {
     afterSyncCallback = callback
   }
 
+  function setAfterGameFinishCallback(callback: (gameResult: GameResult) => void) {
+    afterGameFinishCallback = callback;
+  }
+
   function subscribe(gameId: string, boardApi: BoardApi) {
     _board = boardApi
     _currentGameId = gameId
@@ -118,6 +124,7 @@ export function useLiveGame() {
     syncGame,
     setAfterMoveCallback,
     setAfterSyncCallback,
+    setAfterGameFinishCallback,
     sendMove,
     surrender
   }

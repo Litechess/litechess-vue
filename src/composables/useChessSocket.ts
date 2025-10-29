@@ -72,13 +72,15 @@ export function useChessSocket() {
       plyNumber: 0 // TODO fix
      }
 
-     const type: SocketMessageType = 'move'
-    _socketStore.send(`/${currentGameId}/moves`, JSON.stringify(moveRequest), type)
+
+    _socketStore.send(`/${currentGameId}/moves`, JSON.stringify(moveRequest))
   }
 
   function surrender() {
     if(currentGameId == null) return
-    _socketStore.send(`/game/${currentGameId}`, JSON.stringify({}), 'surrender')
+
+    const gameEventRequest = { event: 'SURRENDER' }
+    _socketStore.send(`/${currentGameId}/events`, JSON.stringify(gameEventRequest))
   }
 
   function unsubscribe() {

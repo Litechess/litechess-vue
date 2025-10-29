@@ -8,6 +8,7 @@ import { computed, watch } from 'vue';
 import { type BoardState, useBoard } from '@/composables/useBoard';
 import { useServerTimeSyncStore } from '@/stores/useServerTymeSyncStore';
 import type { LiveGameResponse } from '@/types/LiveGame';
+import type { GameResult } from '@/types/MoveRequest';
 
 const props = defineProps<{
   sendMove?: boolean // todo refactor
@@ -21,6 +22,7 @@ const props = defineProps<{
   onCreate?: (api: BoardApi, liveGame: ReturnType<typeof useLiveGame>) => void
   onMove?: (move: MoveEvent) => void
   onTimerFinish?: (side: PlayerSide) => void
+  onGameFinish?: (gameResult: GameResult) => void
 }>()
 
 const boardState = props.boardState ?? useBoard()
@@ -30,7 +32,7 @@ const timers = useTimers()
 const serverTimeStore = useServerTimeSyncStore()
 
 const timerShow = computed(() => {
-  return props.chessParty !== undefined && props.chessParty.timeControl?.increment !== 0
+  return props.chessParty !== undefined && props.chessParty.timeControl?.initTime !== 0
 })
 
 const sendMove = computed(() => {
@@ -56,7 +58,7 @@ function getLastTimerValue(timerHistory: number[], side: PlayerSide): number | n
 
 liveGame.setAfterSyncCallback((liveGame: LiveGameResponse) => {
   boardState.updateState()
-  if (props.chessParty?.timeControl?.increment !== 0) {
+  if (props.chessParty?.timeControl?.initTime !== 0) {
     timers.white.value.duration = getRemaining(liveGame.game.currentTimers.WHITE)
     timers.black.value.duration = getRemaining(liveGame.game.currentTimers.BLACK)
     if (timers.isActive.value === false) timers.start(boardState.currentTurn.value)
@@ -64,11 +66,16 @@ liveGame.setAfterSyncCallback((liveGame: LiveGameResponse) => {
 })
 
 liveGame.setAfterMoveCallback((moveMessage) => {
-  if (props.chessParty?.timeControl?.increment !== 0) {
+  if (props.chessParty?.timeControl?.initTime !== 0) {
     timers.white.value.duration = getRemaining(moveMessage.timers.WHITE)
     timers.black.value.duration = getRemaining(moveMessage.timers.BLACK)
   }
   boardState.updateState()
+})
+
+liveGame.setAfterGameFinishCallback((gameResult: GameResult) => {
+  timers.stop()
+  props.onGameFinish?.(gameResult)
 })
 
 const onCreated = (api: BoardApi) => {
