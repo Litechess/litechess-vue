@@ -54,6 +54,10 @@ const onSurrender = () => {
   liveGame.value?.surrender()
 }
 
+const onDraw = () => {
+  liveGame.value?.sendDrawProposition()
+}
+
 const onCreate = (api: BoardApi, liveGamee: ReturnType<typeof useLiveGame>): void => {
   boardApi.value = api
   liveGame.value = liveGamee
@@ -65,6 +69,9 @@ const onGameFinish = (gameResult: GameResult) => {
   chessParty.value.status = gameResult.status
 }
 
+const showGameEventButtons = computed(() => {
+  return playerSide.value !== undefined && gameStatus.value === 'NOT_FINISHED'
+})
 
 const showGameInfo = computed(() => {
   return gameIdParam.value ? true : false
@@ -106,8 +113,10 @@ watch(
       />
       <n-flex>
         <side-info-panel
+          :show-game-event-button="showGameEventButtons"
           :gameId="gameIdParam"
           :on-surrender="onSurrender"
+          :on-draw="onDraw"
           :show-game-info="showGameInfo"
           :board-state="boardState"
           :game-status="gameStatus"

@@ -10,6 +10,7 @@ const props = defineProps<{
   boardState: BoardState,
   onSurrender?: () => void,
   onDraw?: () => void,
+  showGameEventButton?: boolean
   gameStatus?: GameStatus
 }>()
 
@@ -30,8 +31,8 @@ const gameStatus = computed(() => {
     <control-panel
       :on-surrender="props.onSurrender"
       :on-draw="props.onDraw"
-      show-surrender-button
-      show-draw-button
+      :show-surrender-button="props.showGameEventButton"
+      :show-draw-button="props.showGameEventButton"
       :view-next="props.boardState.viewNext"
       :view-previous="props.boardState.viewPrevious"
       :stop-view="props.boardState.stopView"/>

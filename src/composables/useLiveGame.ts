@@ -1,6 +1,6 @@
 import { BoardApi, type MoveEvent } from 'vue3-chessboard'
 import { useChessSocket } from './useChessSocket'
-import type { GameResult, Move, MoveMessage } from '@/types/MoveRequest'
+import type { DrawDecline, DrawProposition, GameResult, Move, MoveMessage } from '@/types/MoveRequest'
 import { useApi } from './useApi'
 import type { LiveGameResponse } from '@/types/LiveGame'
 
@@ -15,7 +15,10 @@ export function useLiveGame() {
 
   let afterMoveCallback: ((move: MoveMessage, isApplied: boolean) => void) | null = null
   let afterSyncCallback: ((liveGame: LiveGameResponse) => void) | null = null
+
   let afterGameFinishCallback: ((gameResult: GameResult) => void) | null = null
+  let afterDrawPropositionCallback: (resultMessage: DrawProposition) => void = () => {}
+  let afterDrawDeclineCallback: (resultMessage: DrawDecline) => void = () => {}
 
   _init()
 
@@ -46,6 +49,14 @@ export function useLiveGame() {
       console.log("game end")
       unsubcribe()
       afterGameFinishCallback?.(gameResult)
+    })
+
+    _chessSocket.setDrawPropositionCallback((resultMessage: DrawProposition) => {
+      afterDrawPropositionCallback?.(resultMessage)
+    })
+
+    _chessSocket.setDrawDeclineCallback((resultMessage: DrawDecline) => {
+      afterDrawDeclineCallback?.(resultMessage)
     })
   }
 
@@ -100,6 +111,15 @@ export function useLiveGame() {
     afterGameFinishCallback = callback;
   }
 
+  function setAfterDrawPropositionCallback(callback: (drawProposition: DrawProposition) => void) {
+    afterDrawPropositionCallback = callback
+  }
+
+  function setAfterDrawDeclineCallback(callback: (drawDecline: DrawDecline) => void) {
+    afterDrawDeclineCallback = callback
+  }
+
+
   function subscribe(gameId: string, boardApi: BoardApi) {
     _board = boardApi
     _currentGameId = gameId
@@ -113,6 +133,11 @@ export function useLiveGame() {
     _currentGameId = null
   }
 
+  function sendDrawProposition() {
+    if(_currentGameId == null) return
+    _chessSocket.sendDrawProposition()
+  }
+
   function surrender() {
     if(_currentGameId == null) return
     _chessSocket.surrender()
@@ -124,6 +149,9 @@ export function useLiveGame() {
     syncGame,
     setAfterMoveCallback,
     setAfterSyncCallback,
+    sendDrawProposition,
+    setAfterDrawDeclineCallback,
+    setAfterDrawPropositionCallback,
     setAfterGameFinishCallback,
     sendMove,
     surrender

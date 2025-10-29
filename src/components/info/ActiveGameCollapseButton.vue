@@ -3,7 +3,7 @@ import DropdownButton from '../DropdownButton.vue';
 import { type Component, computed, h, ref } from 'vue';
 import GameIcon from '../icon/GameIcon.vue';
 import { useLiveGameStore } from '@/stores/useLiveGameStore';
-import { NCard, NFlex } from 'naive-ui';
+import { NFlex } from 'naive-ui';
 import GameCard from '../GameCard.vue';
 import { RouterLink } from 'vue-router';
 
@@ -27,7 +27,6 @@ const selectedId = computed(() => {
 <template>
   <dropdown-button :icon="activeGameIcon" :label="title" v-model="isOpen"/>
   <n-flex v-show="isOpen && liveGameStore.activeGames.length > 0" justify="center">
-    <n-card>
       <n-flex justify="center">
         <router-link
           :to="`/game/${activeGame.id}`"
@@ -41,6 +40,6 @@ const selectedId = computed(() => {
           />
         </router-link>
       </n-flex>
-    </n-card>
+
   </n-flex>
 </template>

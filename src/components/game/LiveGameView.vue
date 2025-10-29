@@ -75,6 +75,8 @@ liveGame.setAfterMoveCallback((moveMessage) => {
 
 liveGame.setAfterGameFinishCallback((gameResult: GameResult) => {
   timers.stop()
+  if(gameResult.status === 'TIMEOUT_WIN_WHITE') timers.black.value.duration = 0
+  else if(gameResult.status === 'TIMEOUT_WIN_BLACK') timers.white.value.duration = 0
   props.onGameFinish?.(gameResult)
 })
 

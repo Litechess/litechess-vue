@@ -16,10 +16,25 @@ export type MoveMessage = {
   serverNow: number
 }
 
+export type GameEventResponse = {
+  type: GameEventType
+
+}
+
 export type GameEventRequest = {
   event: GameEventType
 }
 
 export type GameResult = {
   status: GameStatus
+}
+
+export type DrawProposition = {
+  gameId: string
+  playerId: string
+}
+
+export type DrawDecline = {
+  gameId: string
+  playerId: string
 }
