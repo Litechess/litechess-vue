@@ -12,6 +12,8 @@ const props = defineProps<{
   boardState?: BoardState
   gameStatus?: GameStatus
   gameId?: string
+  onSurrender?: () => void
+  onDraw?: () => void
   activeGames?: readonly ChessParty[]
 }>()
 
@@ -67,6 +69,7 @@ watch(
         :name="GAME_TAB_NAME"
         :tab="piecePane">
         <game-info-view v-if="boardState"
+          :on-surrender="props.onSurrender"
           :board-state="boardState"
           :game-status="props.gameStatus"/>
       </n-tab-pane>

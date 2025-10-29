@@ -3,7 +3,7 @@ import { computed, h, ref, type Component  } from 'vue';
 import { NCollapseTransition, NCard, NButton, NText, NGrid, NFlex, NGridItem } from 'naive-ui';
 import DropdownButton from '../DropdownButton.vue';
 import type { TimeControl } from '@/types/ChessParty';
-import { TIME_CONTROLS } from '@/types/ChessParty';
+import { NO_TIME_CONTROL, TIME_CONTROLS } from '@/types/ChessParty';
 import TimerIcon from '../icon/TimerIcon.vue';
 
 const props = defineProps<{
@@ -19,7 +19,8 @@ const timeControl = computed(() => props.modelValue ?? TIME_CONTROLS.Bullet[0])
 const isActive = computed(() => props.isActive ?? true)
 
 const title = computed(() => {
-    return `${formatTime(timeControl.value.initTime)} | +${formatIncrement(timeControl.value.increment)}`
+    if(timeControl.value.increment === 0 && timeControl.value.initTime === 0) return 'NO TIME CONTROL'
+    else return `${formatTime(timeControl.value.initTime)} | +${formatIncrement(timeControl.value.increment)}`
 })
 
 const timerIcon: Component = h(TimerIcon)
@@ -88,6 +89,19 @@ function onControlClick(control: TimeControl) {
               </n-button>
             </n-grid-item>
           </n-grid>
+        </n-flex>
+        <n-flex vertical style="margin-top: 20px" :size="5">
+          <n-button v-if="timeControl.increment !== 0 || timeControl.initTime !== 0"
+            :disabled="!isActive"
+            tertiary
+            block
+            @click="onControlClick(NO_TIME_CONTROL)">NO TIME CONTROL</n-button>
+          <n-button v-else
+            :disabled="!isActive"
+            type="primary"
+            ghost
+            block
+            @click="onControlClick(NO_TIME_CONTROL)">NO TIME CONTROL</n-button>
         </n-flex>
       </n-flex>
     </n-card>

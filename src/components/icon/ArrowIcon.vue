@@ -6,7 +6,7 @@ const props = defineProps<{
   size: number
 }>();
 </script>
-
+:style="props.rotated ? 'transform: rotate(180deg);' : ''"
 <template>
   <n-icon :size="size">
     <svg

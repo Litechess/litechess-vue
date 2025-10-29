@@ -107,12 +107,18 @@ export function useLiveGame() {
     _currentGameId = null
   }
 
+  function surrender() {
+    if(_currentGameId == null) return
+    _chessSocket.surrender()
+  }
+
   return {
     subscribe,
     unsubcribe,
     syncGame,
     setAfterMoveCallback,
     setAfterSyncCallback,
-    sendMove
+    sendMove,
+    surrender
   }
 }

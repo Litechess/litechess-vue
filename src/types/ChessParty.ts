@@ -81,3 +81,8 @@ export const TIME_CONTROLS: TimeControls = {
     }
   ]
 }
+
+export const NO_TIME_CONTROL: TimeControl = {
+  "initTime": 0,
+  "increment": 0
+}

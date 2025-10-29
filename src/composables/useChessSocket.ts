@@ -9,7 +9,8 @@ export function useChessSocket() {
 
   const _socketStore = useStompSocketStore()
   let currentGameId: string | null = null
-  let unsubFunction: (() => void) | null
+  let movesUnsubFunction: (() => void) | null
+  let eventsUnsubFunction: (() => void) | null
 
   const handlers: Record<SocketMessageType, MessageHandler> = {
     move: (message) => {
@@ -40,13 +41,22 @@ export function useChessSocket() {
       unsubscribe()
     }
 
-    unsubFunction =_socketStore.subscribe(`/game/${gameId}`, (msg) => {
+    movesUnsubFunction =_socketStore.subscribe(`/${gameId}/moves`, (msg) => {
       const message: SocketMessage = JSON.parse(msg.body)
-      const messageType: SocketMessageType = message.headers['type'] as SocketMessageType
-      handlers[messageType](message)
+      handlers["move"](message)
     })
 
-    if(unsubFunction == null) return
+    if(movesUnsubFunction == null) return
+
+    eventsUnsubFunction = _socketStore.subscribe(`/${gameId}/events`, (msg) => {
+      const message: SocketMessage = JSON.parse(msg.body)
+      handlers["gameFinish"](message)
+    })
+
+    if(eventsUnsubFunction == null) {
+      movesUnsubFunction()
+      return
+    }
 
     currentGameId = gameId
   }
@@ -62,11 +72,18 @@ export function useChessSocket() {
       plyNumber: 0 // TODO fix
      }
 
-    _socketStore.send(`/game/${currentGameId}`, JSON.stringify(moveRequest))
+     const type: SocketMessageType = 'move'
+    _socketStore.send(`/${currentGameId}/moves`, JSON.stringify(moveRequest), type)
+  }
+
+  function surrender() {
+    if(currentGameId == null) return
+    _socketStore.send(`/game/${currentGameId}`, JSON.stringify({}), 'surrender')
   }
 
   function unsubscribe() {
-    unsubFunction!()
+    movesUnsubFunction!()
+    eventsUnsubFunction!()
     currentGameId = null
   }
 
@@ -75,6 +92,7 @@ export function useChessSocket() {
     setGameFinishCallback,
     subscribe,
     unsubscribe,
+    surrender,
     sendMove
   }
 }

@@ -7,7 +7,9 @@ import type { GameStatus } from '@/types/ChessParty';
 import { computed } from 'vue';
 
 const props = defineProps<{
-  boardState: BoardState
+  boardState: BoardState,
+  onSurrender?: () => void,
+  onDraw?: () => void,
   gameStatus?: GameStatus
 }>()
 
@@ -26,6 +28,10 @@ const gameStatus = computed(() => {
       :gameStatus="gameStatus"
     />
     <control-panel
+      :on-surrender="props.onSurrender"
+      :on-draw="props.onDraw"
+      show-surrender-button
+      show-draw-button
       :view-next="props.boardState.viewNext"
       :view-previous="props.boardState.viewPrevious"
       :stop-view="props.boardState.stopView"/>

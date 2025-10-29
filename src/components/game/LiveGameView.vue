@@ -18,7 +18,7 @@ const props = defineProps<{
   viewOnly?: boolean
   boardSize?: number
   chessParty?: ChessParty
-  onCreate?: (api: BoardApi) => void
+  onCreate?: (api: BoardApi, liveGame: ReturnType<typeof useLiveGame>) => void
   onMove?: (move: MoveEvent) => void
   onTimerFinish?: (side: PlayerSide) => void
 }>()
@@ -30,7 +30,7 @@ const timers = useTimers()
 const serverTimeStore = useServerTimeSyncStore()
 
 const timerShow = computed(() => {
-  return !!props.chessParty?.timeControl
+  return props.chessParty !== undefined && props.chessParty.timeControl?.increment !== 0
 })
 
 const sendMove = computed(() => {
@@ -53,12 +53,10 @@ function getLastTimerValue(timerHistory: number[], side: PlayerSide): number | n
   return null
 }
 
+
 liveGame.setAfterSyncCallback((liveGame: LiveGameResponse) => {
   boardState.updateState()
-  if (props.chessParty?.timeControl != null) {
-    console.log('TRY SET TIME')
-    console.log(liveGame)
-
+  if (props.chessParty?.timeControl?.increment !== 0) {
     timers.white.value.duration = getRemaining(liveGame.game.currentTimers.WHITE)
     timers.black.value.duration = getRemaining(liveGame.game.currentTimers.BLACK)
     if (timers.isActive.value === false) timers.start(boardState.currentTurn.value)
@@ -66,7 +64,7 @@ liveGame.setAfterSyncCallback((liveGame: LiveGameResponse) => {
 })
 
 liveGame.setAfterMoveCallback((moveMessage) => {
-  if (props.chessParty?.timeControl != null) {
+  if (props.chessParty?.timeControl?.increment !== 0) {
     timers.white.value.duration = getRemaining(moveMessage.timers.WHITE)
     timers.black.value.duration = getRemaining(moveMessage.timers.BLACK)
   }
@@ -82,7 +80,7 @@ const onCreated = (api: BoardApi) => {
     liveGame.subscribe(props.chessParty.id, api)
   }
 
-  props.onCreate?.(api)
+  props.onCreate?.(api, liveGame)
 }
 
 const onMoved = (move: MoveEvent) => {

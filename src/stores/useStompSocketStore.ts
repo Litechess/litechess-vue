@@ -19,6 +19,7 @@ type PendingSubscriptionInfo = {
 }
 export type PendingMessage = {
   destination: string
+  messageType: string
   payload: string
 }
 
@@ -99,7 +100,7 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
 
   const sendPendingMessages = () => {
     _pendingMessages.forEach((element) => {
-      internalSend(element.destination, element.payload)
+      internalSend(element.destination, element.payload, element.messageType)
     })
     _pendingMessages.length = 0
   }
@@ -202,20 +203,21 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
     console.log(_activeSubscriptions)
   }
 
-  const internalSend = (destination: string, payload: string) => {
+  const internalSend = (destination: string, payload: string, messageType: string) => {
     const message: IPublishParams = {
+      headers: { type: messageType },
       destination: `${APP_PREFIX}${destination}`,
       body: payload,
     }
     _client?.publish(message)
   }
 
-  const send = (destination: string, payload: string) => {
+  const send = (destination: string, payload: string, messageType: string) => {
     if (!isConnected.value) {
-      if (isPendingMessages.value) _pendingMessages.push({ destination, payload })
+      if (isPendingMessages.value) _pendingMessages.push({ destination, payload, messageType })
       return
     }
-    internalSend(destination, payload)
+    internalSend(destination, payload, messageType)
   }
 
   return {

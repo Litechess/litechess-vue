@@ -10,6 +10,7 @@ import { BoardApi } from 'vue3-chessboard'
 import LiveGameView from '@/components/game/LiveGameView.vue'
 import SideInfoPanel from '@/components/info/SideInfoPanel.vue'
 import { useLiveGameStore } from '@/stores/useLiveGameStore'
+import type { useLiveGame } from '@/composables/useLiveGame'
 
 const boardState = useBoard()
 const authStore = useAuthStore()
@@ -46,9 +47,16 @@ const viewOnly = computed(() => {
 })
 
 const boardApi: Ref<BoardApi | undefined> = ref(undefined)
+const liveGame: Ref<ReturnType<typeof useLiveGame> | undefined> = ref(undefined)
 
-const onCreate = (api: BoardApi) => {
+const onSurrender = () => {
+  liveGame.value?.surrender()
+}
+
+const onCreate = (api: BoardApi, liveGamee: ReturnType<typeof useLiveGame>): void => {
   boardApi.value = api
+  liveGame.value = liveGamee
+
 }
 
 const onTimerFinish = (side: PlayerSide) => {
@@ -65,6 +73,7 @@ const onMove = () => {
 const showGameInfo = computed(() => {
   return gameIdParam.value ? true : false
 })
+
 
 watch(
   gameIdParam,
@@ -103,6 +112,7 @@ watch(
       <n-flex>
         <side-info-panel
           :gameId="gameIdParam"
+          :on-surrender="onSurrender"
           :show-game-info="showGameInfo"
           :board-state="boardState"
           :game-status="gameStatus"

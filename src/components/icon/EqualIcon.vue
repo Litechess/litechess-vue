@@ -7,6 +7,6 @@ const props = defineProps<{
 
 <template>
   <n-icon :size="props.size">
-    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24"><path d="M19 9.998H5v-2h14zm0 6H5v-2h14z" fill="currentColor"></path></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M160-280v-120h640v120H160Zm0-280v-120h640v120H160Z"/></svg>
   </n-icon>
 </template>
