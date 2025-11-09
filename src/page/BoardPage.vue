@@ -3,7 +3,7 @@ import { useApi } from '@/composables/useApi'
 import { useBoard } from '@/composables/useBoard'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { type ChessParty, type GameStatus } from '@/types/ChessParty'
-import { NFlex } from 'naive-ui'
+import { NFlex, useNotification } from 'naive-ui'
 import { computed, ref, watch, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { BoardApi } from 'vue3-chessboard'
@@ -11,13 +11,14 @@ import LiveGameView from '@/components/game/LiveGameView.vue'
 import SideInfoPanel from '@/components/info/SideInfoPanel.vue'
 import { useLiveGameStore } from '@/stores/useLiveGameStore'
 import type { useLiveGame } from '@/composables/useLiveGame'
-import type { GameResult } from '@/types/MoveRequest'
+import type { DrawDecline, DrawProposition, GameResult } from '@/types/MoveRequest'
 
 const boardState = useBoard()
 const authStore = useAuthStore()
 const api = useApi()
 const route = useRoute()
 const liveGameStore = useLiveGameStore()
+const notification = useNotification()
 
 const gameIdParam = computed(() => {
   return route.params.gameId.length > 0 ? String(route.params.gameId) : undefined
@@ -62,6 +63,28 @@ const onCreate = (api: BoardApi, liveGamee: ReturnType<typeof useLiveGame>): voi
   boardApi.value = api
   liveGame.value = liveGamee
 
+  liveGame.value.setAfterDrawPropositionCallback((drawProposition: DrawProposition) => {
+    if(drawProposition.playerId === authStore.getId()) {
+      return;
+    }
+      notification['info']({
+        duration: 5000,
+        title: 'Draw Proposition',
+        content: 'Opponent has proposed a draw. Send draw proposition for accept.',
+    })
+  })
+
+  liveGame.value.setAfterDrawDeclineCallback((drawDecline: DrawDecline) => {
+    if(drawDecline.playerId === authStore.getId()) {
+      return;
+    }
+
+    notification['info']({
+      duration: 5000,
+      title: 'Draw Declined',
+      content: 'Draw proposition has been declined by your opponent.',
+    })
+  })
 }
 
 const onGameFinish = (gameResult: GameResult) => {

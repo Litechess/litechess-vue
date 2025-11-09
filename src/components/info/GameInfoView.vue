@@ -28,6 +28,7 @@ const gameStatus = computed(() => {
       :move-click="props.boardState.viewPly"
       :gameStatus="gameStatus"
     />
+
     <control-panel
       :on-surrender="props.onSurrender"
       :on-draw="props.onDraw"
