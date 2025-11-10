@@ -4,14 +4,36 @@ import { useBoard } from '@/composables/useBoard'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { type ChessParty, type GameStatus } from '@/types/ChessParty'
 import { NFlex, useNotification } from 'naive-ui'
-import { computed, ref, watch, type Ref } from 'vue'
+import { computed, onMounted, ref, watch, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { BoardApi } from 'vue3-chessboard'
+import { BoardApi, type MoveEvent } from 'vue3-chessboard'
 import LiveGameView from '@/components/game/LiveGameView.vue'
 import SideInfoPanel from '@/components/info/SideInfoPanel.vue'
 import { useLiveGameStore } from '@/stores/useLiveGameStore'
 import type { useLiveGame } from '@/composables/useLiveGame'
 import type { DrawDecline, DrawProposition, GameResult } from '@/types/MoveRequest'
+
+let moveSound: HTMLAudioElement | null;
+let gameFinishSound: HTMLAudioElement | null;
+let captureSound: HTMLAudioElement | null;
+
+onMounted(() => {
+  moveSound = new Audio('/sounds/Move.mp3')
+  gameFinishSound = new Audio('/sounds/GenericNotify.mp3')
+  captureSound = new Audio('/sounds/Capture.mp3')
+
+  if(moveSound !== null) {
+    moveSound.volume = 0.8;
+  }
+
+  if(gameFinishSound !== null) {
+    gameFinishSound.volume = 0.8
+  }
+
+  if(captureSound !== null) {
+    captureSound.volume = 0.8
+  }
+})
 
 const boardState = useBoard()
 const authStore = useAuthStore()
@@ -68,7 +90,7 @@ const onCreate = (api: BoardApi, liveGamee: ReturnType<typeof useLiveGame>): voi
       return;
     }
       notification['info']({
-        duration: 5000,
+        duration: 7000,
         title: 'Draw Proposition',
         content: 'Opponent has proposed a draw. Send draw proposition for accept.',
     })
@@ -89,6 +111,7 @@ const onCreate = (api: BoardApi, liveGamee: ReturnType<typeof useLiveGame>): voi
 
 const onGameFinish = (gameResult: GameResult) => {
   if(chessParty.value === undefined) return
+  if(gameFinishSound !== null) gameFinishSound.play()
   chessParty.value.status = gameResult.status
 }
 
@@ -99,6 +122,17 @@ const showGameEventButtons = computed(() => {
 const showGameInfo = computed(() => {
   return gameIdParam.value ? true : false
 })
+
+const onMove = (move: MoveEvent) => {
+  if(moveSound !== null && move.captured == undefined) {
+    moveSound.currentTime = 0;
+    moveSound.play();
+  }
+  else if(captureSound !== null && move.captured) {
+    captureSound.currentTime = 0;
+    captureSound.play();
+  }
+}
 
 
 watch(
@@ -132,6 +166,7 @@ watch(
         :view-only="viewOnly"
         :player-side="playerSide"
         :on-create="onCreate"
+        :on-move="onMove"
         :on-game-finish="onGameFinish"
       />
       <n-flex>

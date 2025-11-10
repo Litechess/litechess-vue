@@ -4,13 +4,18 @@ import { useMatchQueue } from '@/composables/useMatchQueue';
 import { useLiveGameStore } from '@/stores/useLiveGameStore';
 import type { TimeControl } from '@/types/ChessParty';
 import { NButton } from 'naive-ui';
-import { ref, toRefs, watch } from 'vue';
+import { onMounted, ref, toRefs, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const props = defineProps<{
   onQueue?: (inQueue: boolean) => void
   timeControl: TimeControl
 }>();
+
+let gameFindSound: HTMLAudioElement | null;
+onMounted(() => {
+  gameFindSound = new Audio('/sounds/Confirmation.mp3');
+})
 
 const matchQueue = useMatchQueue()
 const { inQueue } = toRefs(matchQueue)
@@ -22,6 +27,10 @@ const activeGameStore = useLiveGameStore()
 
 const gameFindedCallback = (gameId: string) => {
   activeGameStore.load(gameId)
+  if(gameFindSound !== null) {
+    gameFindSound.play()
+  }
+  
   router.push(`/game/${gameId}`)
 }
 
