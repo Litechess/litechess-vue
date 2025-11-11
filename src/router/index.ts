@@ -1,5 +1,6 @@
 
 import BoardTest from '@/page/BoardTest.vue'
+import UserPage from '@/page/UserPage.vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -26,6 +27,11 @@ const router = createRouter({
       name: 'play',
       component: BoardPage,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/user/:userId?',
+      name: 'user',
+      component: UserPage
     },
     {
       path: '/test/:gameId?',
