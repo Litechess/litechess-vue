@@ -16,12 +16,24 @@ export const useHttpClient = defineStore('httpClient', () => {
 
   const get = async (endpoint: string) => {
     console.log('perform http')
+
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       method: 'GET',
       headers: getHeaders(),
     })
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => null) 
+      throw {
+        status: response.status,
+        message: response.statusText,
+        body: errorBody,
+      }
+    }
+
     return response.json()
   }
+
 
   // const post = async (endpoint: string, body: any) => {
   //   const response = await fetch(`${BASE_URL}${endpoint}`, {

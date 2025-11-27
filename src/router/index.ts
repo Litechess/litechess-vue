@@ -29,7 +29,7 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/user/:userId?',
+      path: '/user/:userId',
       name: 'user',
       component: UserPage
     },

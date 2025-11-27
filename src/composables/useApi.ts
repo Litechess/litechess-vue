@@ -15,7 +15,9 @@ export function useApi() {
   async function getParties(filter: ChessPartyFilter): Promise<ChessParty[]> {
     const oponentParam = filter.oponentId ? `oponentId=${filter.oponentId}` : ''
     const ownerParam = filter.playerId ? `ownerId=${filter.playerId}` : ''
-    return _httpClient.get(`api/v1/games?${oponentParam}&${ownerParam}`)
+    const live = `live=${filter.live ?? false}`
+    const finish = `finish=${filter.finish ?? true}`
+    return _httpClient.get(`api/v1/games?${oponentParam}&${ownerParam}&${live}&${finish}`)
   }
 
   async function getLiveGame(gameId: string): Promise<LiveGameResponse> {
