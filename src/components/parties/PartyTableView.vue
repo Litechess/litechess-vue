@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { ChessParty } from '@/types/ChessParty'
+import type { ChessParty, GameStatus } from '@/types/ChessParty'
 import { NFlex, NIcon, NText, type DataTableColumns, NDataTable } from 'naive-ui'
-import { h,} from 'vue'
+import { computed, h } from 'vue'
 import PlayerWithColorName from './PlayerWithColorName.vue'
 import { getSimpleStatus } from '@/util/ChessPartyUtil.vue'
 import LiveIcon from '../icon/LiveIcon.vue'
@@ -14,8 +14,10 @@ import { useRouter } from 'vue-router'
 const props = defineProps<{
   parties: ChessParty[]
   playerId: string
+  loading?: boolean
 }>();
 
+const loading = computed(() => props.loading ?? false)
 
 const formatTime = (ms: number): string => {
   const seconds = ms / 1000;
@@ -72,13 +74,14 @@ function createColumns(): DataTableColumns<ChessParty> {
 
   },
   {
-    title: 'Status',
+    title: 'Result',
     key: 'result',
     render(row) {
-      const isWhiteWinner = row.status == 'WIN_WHITE' && row.white.id == props.playerId
-      const isBlackWinner = row.status == 'WIN_BLACK' && row.black.id == props.playerId
-      const isDraw = row.status == 'DRAW'
-      const isLive = row.status == 'NOT_FINISHED'
+      const status: GameStatus = getSimpleStatus(row.status)
+      const isWhiteWinner = status == 'WIN_WHITE' && row.white.id == props.playerId
+      const isBlackWinner = status == 'WIN_BLACK' && row.black.id == props.playerId
+      const isDraw = status == 'DRAW'
+      const isLive = status == 'NOT_FINISHED'
 
       return h(
         NIcon,
@@ -123,6 +126,7 @@ function createProps(row: RowData) {
 
 const columns = createColumns()
 const router = useRouter()
+const pagination = { pageSize: 10 }
 
 
 </script>
@@ -131,6 +135,8 @@ const router = useRouter()
   <n-data-table
     :data="props.parties"
     :columns="columns"
-    :row-props="createProps">
+    :row-props="createProps"
+    :pagination="pagination"
+    :loading="loading">
   </n-data-table>
 </template>

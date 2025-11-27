@@ -1,85 +1,50 @@
 <script setup lang="ts">
 import { NFlex, NCard, NAvatar, NText, NDivider } from 'naive-ui';
-import { ref, type Ref } from 'vue';
+import { computed, ref, watch, type Ref } from 'vue';
 import { NTabs, NTabPane } from 'naive-ui';
-import { TIME_CONTROLS, type ChessParty } from '@/types/ChessParty';
+import { type ChessParty } from '@/types/ChessParty';
 import PartyTableView from '@/components/parties/PartyTableView.vue';
+import { useApi } from '@/composables/useApi';
+import { useRoute } from 'vue-router';
+import type { ChessPartyFilter } from '@/types/Requests';
+import PartyStatsView from '@/components/parties/PartyStatsView.vue';
 
 const nickName = ref('Olegnickname')
-const PLAYER_ID = '123'
 const registrationDate = ref('2025.01.01')
 const status = ref('offline')
 const tabSelect = ref('Stats')
 const parties: Ref<ChessParty[]> = ref([])
+const api = useApi()
+const route = useRoute()
 
-parties.value.push({
-  id: '123',
-  white: {
-    id: '123',
-    name: 'White',
-  },
-  black: {
-    id: '122',
-    name: 'Black',
-  },
-  moves: [],
-  timerHistory: [],
-  timeControl: null,
-  initFen: 'initFen',
-  status: "WIN_BLACK"
+const userId = computed(() => {
+  return String(route.params.userId)
 })
 
-parties.value.push({
-  id: '124',
-  white: {
-    id: '123',
-    name: 'Black',
-  },
-  black: {
-    id: '122',
-    name: 'White',
-  },
-  moves: [],
-  timerHistory: [],
-  timeControl: TIME_CONTROLS.Blitz[0],
-  initFen: 'initFen',
-  status: "WIN_WHITE"
-})
+const isLoadingPartyData = ref(true);
 
-parties.value.push({
-  id: '124',
-  white: {
-    id: '126',
-    name: 'Black',
-  },
-  black: {
-    id: '125',
-    name: 'White',
-  },
-  moves: [],
-  timerHistory: [],
-  timeControl: null,
-  initFen: 'initFen',
-  status: "DRAW"
-})
+async function loadParties() {
+  const filters: ChessPartyFilter = {
+    finish: true,
+    live: false,
+    playerId: userId.value
+  }
 
-parties.value.push({
-  id: '124',
-  white: {
-    id: '129',
-    name: 'Black',
-  },
-  black: {
-    id: '128',
-    name: 'White',
-  },
-  moves: [],
-  timerHistory: [],
-  timeControl: null,
-  initFen: 'initFen',
-  status: "NOT_FINISHED"
-})
+    api.getAllGames(filters).then((res) => {
+      parties.value = res
+      isLoadingPartyData.value = false;
+  }).catch(() => {
+    console.log("HANDLE UNKNOWN USER ID")
+  })
+}
 
+watch(
+  () => route.params.userId,
+  async () => {
+    loadParties()
+  },
+  { immediate: true },
+)
 
 </script>
 
@@ -110,13 +75,16 @@ parties.value.push({
         </n-tabs>
       </n-card>
       <n-card v-if="tabSelect == 'Stats'">
-        <party-table-view
+        <party-stats-view
           :parties="parties"
-          :playerId="PLAYER_ID"
-        />
+          :playerId="userId"/>
       </n-card>
       <n-card v-if="tabSelect == 'Parties'">
-        Parties
+        <party-table-view
+          :parties="parties"
+          :playerId="userId"
+          :loading="isLoadingPartyData"
+        />
       </n-card>
     </n-flex>
   </n-flex>

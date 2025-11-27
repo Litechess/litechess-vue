@@ -42,11 +42,11 @@ export const useLiveGameStore = defineStore('liveGame', () => {
   }
 
 
-  api.getAllGames({ playerId: authStore.getId()! })
+  api.getAllGames({ playerId: authStore.getId()!, live: true, finish: false })
   .then((result: ChessParty[]) => {
-    const filteredResult = result.filter((game) => {
-      return game.status === 'NOT_FINISHED'
-    })
+    console.log("GAMES")
+    console.log(result)
+    const filteredResult = result
 
     filteredResult.forEach((game: ChessParty) => {
       add(game)
