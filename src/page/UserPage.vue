@@ -8,18 +8,33 @@ import { useApi } from '@/composables/useApi';
 import { useRoute } from 'vue-router';
 import type { ChessPartyFilter } from '@/types/Requests';
 import PartyStatsView from '@/components/parties/PartyStatsView.vue';
+import type { UserInfo } from '@/types/UserInfo';
+import { useAuthStore } from '@/stores/useAuthStore';
 
-const nickName = ref('Olegnickname')
-const registrationDate = ref('2025.01.01')
+const authStore = useAuthStore()
+const userId = computed(() => {
+  return String(route.params.userId)
+})
+
+const userInfo: Ref<UserInfo | undefined> = ref(undefined)
+
+const userName = computed(() => {
+  return userInfo.value?.nickname ?? ''
+})
+
+const userRegistrationDate = computed(() => {
+  if(userInfo.value === undefined) return new Date(0).toLocaleDateString("ru-RU")
+  return new Date(userInfo.value.createdAt).toLocaleDateString("ru-RU")
+
+})
+
+
 const status = ref('offline')
 const tabSelect = ref('Stats')
 const parties: Ref<ChessParty[]> = ref([])
 const api = useApi()
 const route = useRoute()
 
-const userId = computed(() => {
-  return String(route.params.userId)
-})
 
 const isLoadingPartyData = ref(true);
 
@@ -42,6 +57,16 @@ watch(
   () => route.params.userId,
   async () => {
     loadParties()
+    api.getUserInfo(userId.value).then((res) => {
+      userInfo.value = res
+    })
+    api.getUserOnline(userId.value).then((res) => {
+      if (res.online || authStore.getId() === userId.value) {
+        status.value = "online"
+      } else {
+        status.value = "offline"
+      }
+    })
   },
   { immediate: true },
 )
@@ -55,11 +80,11 @@ watch(
         <n-flex>
           <n-avatar :size="125" src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg" />
           <n-flex style="align-items: flex-start" vertical justify="space-between">
-            <n-text style="font-size: 2.5em" strong> {{ nickName }}</n-text>
+            <n-text style="font-size: 2.5em" strong> {{ userName }}</n-text>
             <n-flex inline>
               <n-flex inline :size="5">
                 <n-text style="font-size: 1em">Registration date: </n-text>
-                <n-text strong type="info" style="font-size: 1em"> {{ registrationDate }}</n-text>
+                <n-text strong type="info" style="font-size: 1em"> {{ userRegistrationDate }}</n-text>
               </n-flex>
               <n-flex inline :size="5">
                 <n-text style="font-size: 1em">Status: </n-text>
