@@ -1,8 +1,10 @@
 import { useHttpClient } from "@/stores/useHttpClient";
 import type { ChessParty } from "@/types/ChessParty";
 import type { LiveGameResponse } from "@/types/LiveGame";
+import type { OnlineResponse } from "@/types/OnlineResponse";
 import type { ChessPartyFilter } from "@/types/Requests";
 import type { ServerNowResponse } from "@/types/ServerNow";
+import type { UserInfo } from "@/types/UserInfo";
 
 export function useApi() {
 
@@ -28,10 +30,20 @@ export function useApi() {
     return _httpClient.get(`api/v1/livegames/serverNow`)
   }
 
+  async function getUserInfo(id: string): Promise<UserInfo> {
+    return _httpClient.get(`api/v1/users/${id}`)
+  }
+
+  async function getUserOnline(id: string): Promise<OnlineResponse> {
+    return _httpClient.get(`api/v1/online/${id}`)
+  }
+
   return {
     getChessGame,
     getAllGames: getParties,
     getLiveGame,
+    getUserOnline,
+    getUserInfo,
     getServerTime
   }
 }

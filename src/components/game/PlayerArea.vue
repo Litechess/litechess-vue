@@ -52,11 +52,17 @@ const timerActive = computed<boolean>(() => {
 const onTimerFinished = () => {
   props.onTimerFinish?.(color.value)
 }
+
+const userId = computed(() => {
+  return props.playerInfo?.id
+})
+
 </script>
 
 <template>
   <n-flex justify="space-between">
     <player-board-info
+      :user-id="userId"
       :color="color"
       :name="playerInfo.name"
       avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
