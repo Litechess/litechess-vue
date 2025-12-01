@@ -13,9 +13,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div style="padding: 2rem;">
-    <h1>🔄 Вход через Keycloak...</h1>
-    <p>Пожалуйста, подождите. Идёт авторизация.</p>
+  <div style="height: calc(100dvh - 2rem)">
+
   </div>
 </template>
 

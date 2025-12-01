@@ -36,6 +36,10 @@ const formatTime = (ms: number): string => {
   }
 };
 
+const filteredParties = computed(() => {
+  return props.parties.slice().reverse();
+})
+
 const formatIncrement = (ms: number): string => {
   const seconds = ms / 1000;
 
@@ -133,7 +137,7 @@ const pagination = { pageSize: 10 }
 
 <template>
   <n-data-table
-    :data="props.parties"
+    :data="filteredParties"
     :columns="columns"
     :row-props="createProps"
     :pagination="pagination"

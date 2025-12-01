@@ -65,7 +65,7 @@ const userId = computed(() => {
       :user-id="userId"
       :color="color"
       :name="playerInfo.name"
-      avatar="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
+      avatar=""
       :pieces="pieces"
       :materialDiff="materialDiff"
     />

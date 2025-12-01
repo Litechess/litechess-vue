@@ -78,7 +78,7 @@ watch(
     <n-flex style="width: 50%" vertical :size="30">
       <n-card>
         <n-flex>
-          <n-avatar :size="125" src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg" />
+          <n-avatar :size="125" />
           <n-flex style="align-items: flex-start" vertical justify="space-between">
             <n-text style="font-size: 2.5em" strong> {{ userName }}</n-text>
             <n-flex inline>
