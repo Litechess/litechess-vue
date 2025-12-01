@@ -1,8 +1,9 @@
 import { useStompSocketStore } from "@/stores/useStompSocketStore"
 import type { TimeControl } from "@/types/ChessParty"
-import { readonly, ref, shallowReactive } from "vue"
+import { defineStore } from "pinia"
+import { readonly, ref } from "vue"
 
-export function useMatchQueue() {
+export const useMatchQueue = defineStore('matchQueue', () => {
 
   const _stompStore = useStompSocketStore()
   let _findSubInfo: (() => void) | null
@@ -33,11 +34,11 @@ export function useMatchQueue() {
     inQueue.value = false
   }
 
-  return shallowReactive({
+  return {
     enterInQueue,
     leaveFromQueue,
     inQueue: readonly(inQueue)
-  })
-}
+  }
+})
 
 

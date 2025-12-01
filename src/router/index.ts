@@ -1,11 +1,10 @@
 
-import BoardTest from '@/page/BoardTest.vue'
+import PostRegistrationPage from '@/page/PostRegistrationPage.vue'
 import UserPage from '@/page/UserPage.vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { createRouter, createWebHistory } from 'vue-router'
 
-
-const HomePage = () => import("@/page/HomePage.vue")
+// const HomePage = () => import("@/page/HomePage.vue")
 const BoardPage = () => import("@/page/BoardPage.vue")
 const LoginCallbackAuthPage = () => import("@/page/LoginCallbackPage.vue")
 
@@ -14,8 +13,9 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomePage
+      redirect: () => {
+        return `/game`
+      }
     },
     {
       path: '/auth/login-callback',
@@ -29,27 +29,57 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/user',
+      redirect: () => {
+        const auth = useAuthStore()
+        return `/user/${auth.getId()}`
+      }
+    },
+    {
       path: '/user/:userId',
       name: 'user',
+      meta: { requiresAuth: true },
       component: UserPage
     },
     {
-      path: '/test/:gameId?',
-      name: 'test',
-      component: BoardTest
-    }
+      path: '/registration',
+      name: 'registration',
+      meta: { requiresAuth: true },
+      component: PostRegistrationPage
+    },
+    // {
+    //   path: '/test/:gameId?',
+    //   name: 'test',
+    //   component: BoardTest
+    // }
   ],
 })
 
 router.beforeEach(async (to, from, next) => {
+
   const auth = useAuthStore()
+  if (to.name === 'loginCallback') {
+    return next();
+  }
 
   if (!auth.user) {
-    await auth.loadUser()
+    await auth.loadUser();
   }
 
   if (to.meta.requiresAuth && !auth.user) {
-    return auth.login()
+    await auth.login();
+    next()
+    return;
+  }
+
+  if(auth.isRegistered === false && to.name !== 'registration') {
+    next('/registration')
+    return;
+  }
+
+  if(to.name === 'registration' && auth.isRegistered) {
+    next('/user')
+    return;
   }
 
   next()

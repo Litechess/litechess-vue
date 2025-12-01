@@ -23,7 +23,7 @@ export const useHttpClient = defineStore('httpClient', () => {
     })
 
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => null) 
+      const errorBody = await response.json().catch(() => null)
       throw {
         status: response.status,
         message: response.statusText,
@@ -35,19 +35,30 @@ export const useHttpClient = defineStore('httpClient', () => {
   }
 
 
-  // const post = async (endpoint: string, body: any) => {
-  //   const response = await fetch(`${BASE_URL}${endpoint}`, {
-  //     method: 'POST',
-  //     headers: {
-  //       ...getHeaders(),
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify(body),
-  //   })
-  //   return response.json()
-  // }
+  const post = async (endpoint: string, body: string) => {
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      method: 'POST',
+      headers: {
+        ...getHeaders(),
+        'Content-Type': 'application/json',
+      },
+      body: body,
+    })
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => null)
+      throw {
+        status: response.status,
+        message: response.statusText,
+        body: errorBody,
+      }
+    }
+
+    return response.json()
+  }
 
   return {
-    get
+    get,
+    post
   }
 })

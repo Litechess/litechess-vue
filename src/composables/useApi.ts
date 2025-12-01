@@ -2,6 +2,7 @@ import { useHttpClient } from "@/stores/useHttpClient";
 import type { ChessParty } from "@/types/ChessParty";
 import type { LiveGameResponse } from "@/types/LiveGame";
 import type { OnlineResponse } from "@/types/OnlineResponse";
+import type { RegistrationRequest } from "@/types/RegistrationRequest";
 import type { ChessPartyFilter } from "@/types/Requests";
 import type { ServerNowResponse } from "@/types/ServerNow";
 import type { UserInfo } from "@/types/UserInfo";
@@ -38,11 +39,16 @@ export function useApi() {
     return _httpClient.get(`api/v1/online/${id}`)
   }
 
+  async function registerUser(request: RegistrationRequest): Promise<void> {
+    return _httpClient.post(`api/v1/users`, JSON.stringify(request))
+  }
+
   return {
     getChessGame,
     getAllGames: getParties,
     getLiveGame,
     getUserOnline,
+    registerUser,
     getUserInfo,
     getServerTime
   }

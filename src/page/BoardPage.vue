@@ -142,6 +142,7 @@ watch(
       chessParty.value = undefined
       return
     }
+    
     const loadedParty: ChessParty = await api.getChessGame(id)
     chessParty.value = {
       ...loadedParty,
