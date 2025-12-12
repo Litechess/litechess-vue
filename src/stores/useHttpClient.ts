@@ -2,7 +2,7 @@ import { defineStore } from "pinia"
 import { useAuthStore } from "./useAuthStore"
 
 export const useHttpClient = defineStore('httpClient', () => {
-  const BASE_URL = 'http://localhost:8080/'
+  const BASE_URL = '/api'
 
   const authStore = useAuthStore()
 
@@ -17,7 +17,7 @@ export const useHttpClient = defineStore('httpClient', () => {
   const get = async (endpoint: string) => {
     console.log('perform http')
 
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
+    const response = await fetch(`${BASE_URL}/${endpoint}`, {
       method: 'GET',
       headers: getHeaders(),
     })
@@ -36,7 +36,7 @@ export const useHttpClient = defineStore('httpClient', () => {
 
 
   const post = async (endpoint: string, body: string) => {
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
+    const response = await fetch(`${BASE_URL}/${endpoint}`, {
       method: 'POST',
       headers: {
         ...getHeaders(),
