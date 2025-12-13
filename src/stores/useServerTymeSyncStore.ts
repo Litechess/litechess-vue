@@ -31,12 +31,12 @@ export const useServerTimeSyncStore = defineStore('serverTimeSync', () => {
    */
   async function sync(): Promise<void> {
     try {
-      const start = Date.now()
+      const startPerf = performance.now()
       const serverNow = await fetchServerNow()
-      const end = Date.now()
+      const endPerf = performance.now()
 
-      const measuredPing = (end - start) / 2
-      const computedOffset = serverNow + measuredPing - end
+      const measuredPing = (endPerf - startPerf) / 2
+      const computedOffset = serverNow + measuredPing - Date.now()
 
       ping.value = measuredPing
       offset.value = computedOffset
@@ -70,7 +70,7 @@ export const useServerTimeSyncStore = defineStore('serverTimeSync', () => {
    */
   function getServerNow(): number {
     console.log(offset.value + " OFFSET")
-    return Date.now()
+    return Date.now() + offset.value
   }
 
   // Автоматический запуск при монтировании
