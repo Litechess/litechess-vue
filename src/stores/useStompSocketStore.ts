@@ -23,7 +23,7 @@ export type PendingMessage = {
 }
 
 export const useStompSocketStore = defineStore('stompWebSocket', () => {
-  const BROKER_URL = 'http://localhost:8080/ws'
+  const BROKER_URL = '/ws'
   const DEFAULT_RECONNECT_DELAY = 2000
   const TOPIC_PREFIX = '/topic'
   const APP_PREFIX = '/app'

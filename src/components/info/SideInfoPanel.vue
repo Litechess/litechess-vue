@@ -7,6 +7,7 @@ import MatchmakingView from './MatchmakingView.vue';
 import ImageText from '../ImageText.vue';
 import type { ChessParty, GameStatus } from '@/types/ChessParty';
 import type { BoardState } from '@/composables/useBoard';
+import { useMediaQuery } from '@vueuse/core';
 
 const props = defineProps<{
   boardState?: BoardState
@@ -17,6 +18,12 @@ const props = defineProps<{
   onDraw?: () => void
   activeGames?: readonly ChessParty[]
 }>()
+
+const isMobile = useMediaQuery('(max-width: 767px)')
+
+const adaptiveWidth = computed(() => {
+  return isMobile.value ? '250px' : '400px'
+})
 
 const piecePane = h(PieceText, {
   text: 'Game',
@@ -59,7 +66,7 @@ watch(
 <template>
   <n-card style="height: 100%">
     <n-tabs
-      style="width: 400px"
+      :style = "{ width: adaptiveWidth }"
       type="line"
       justify-content="center"
       size="large"

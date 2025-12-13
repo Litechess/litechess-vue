@@ -24,6 +24,7 @@ const onMoved = (move: MoveEvent) => {
 
 <template>
   <TheChessboard
+  style="min-width: 280px"
   reactive-config
   :player-color="props.playerColor"
   :board-config="props.boardConfig"
