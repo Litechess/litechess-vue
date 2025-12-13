@@ -2,6 +2,8 @@ import { defineConfig, loadEnv } from "vite"
 import vue from "@vitejs/plugin-vue"
 import vueDevTools from "vite-plugin-vue-devtools"
 import { fileURLToPath, URL } from "node:url"
+import fs from "fs"
+import path from 'path'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
@@ -22,12 +24,18 @@ export default defineConfig(({ mode }) => {
             "/api": {
               target: env.VITE_API_TARGET,
               changeOrigin: true,
+              secure: false,
             },
             "/identity": {
               target: env.VITE_IDENTITY_TARGET,
               changeOrigin: true,
+              secure: false,
               rewrite: (path) => path.replace(/^\/identity/, ''),
             },
+          },
+          https: {
+            key: fs.readFileSync(path.resolve(__dirname, env.VITE_SSL_KEY_PATH)),
+            cert: fs.readFileSync(path.resolve(__dirname, env.VITE_SSL_CERT_PATH)),
           },
         }
       : undefined,
