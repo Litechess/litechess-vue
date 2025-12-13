@@ -15,6 +15,7 @@ const IDENTITY_URL: string = `/identity/realms/${VITE_OIDC_REALM}`
 const APP_ORIGIN = window.location.origin
 
 const settings = {
+
   authority: IDENTITY_URL,
   client_id: VITE_OIDC_CLIENT_ID,
 

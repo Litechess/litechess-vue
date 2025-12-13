@@ -11,12 +11,11 @@ export const useHttpClient = defineStore('httpClient', () => {
     if (authStore.user) {
       headers['Authorization'] = `Bearer ${authStore.user.access_token}`
     }
+
     return headers
   }
 
   const get = async (endpoint: string) => {
-    console.log('perform http')
-
     const response = await fetch(`${BASE_URL}/${endpoint}`, {
       method: 'GET',
       headers: getHeaders(),

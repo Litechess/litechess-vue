@@ -12,7 +12,7 @@ export function useApi() {
   const _httpClient = useHttpClient()
 
   async function getChessGame(gameId: string): Promise<ChessParty> {
-    return _httpClient.get(`/v1/games/${gameId}`)
+    return _httpClient.get(`v1/games/${gameId}`)
   }
 
   async function getParties(filter: ChessPartyFilter): Promise<ChessParty[]> {
@@ -20,27 +20,27 @@ export function useApi() {
     const ownerParam = filter.playerId ? `ownerId=${filter.playerId}` : ''
     const live = `live=${filter.live ?? false}`
     const finish = `finish=${filter.finish ?? true}`
-    return _httpClient.get(`/v1/games?${oponentParam}&${ownerParam}&${live}&${finish}`)
+    return _httpClient.get(`v1/games?${oponentParam}&${ownerParam}&${live}&${finish}`)
   }
 
   async function getLiveGame(gameId: string): Promise<LiveGameResponse> {
-    return _httpClient.get(`/v1/livegames/${gameId}`)
+    return _httpClient.get(`v1/livegames/${gameId}`)
   }
 
   async function getServerTime(): Promise<ServerNowResponse> {
-    return _httpClient.get(`/v1/livegames/serverNow`)
+    return _httpClient.get(`v1/livegames/serverNow`)
   }
 
   async function getUserInfo(id: string): Promise<UserInfo> {
-    return _httpClient.get(`/v1/users/${id}`)
+    return _httpClient.get(`v1/users/${id}`)
   }
 
   async function getUserOnline(id: string): Promise<OnlineResponse> {
-    return _httpClient.get(`/v1/online/${id}`)
+    return _httpClient.get(`v1/online/${id}`)
   }
 
   async function registerUser(request: RegistrationRequest): Promise<void> {
-    return _httpClient.post(`/v1/users`, JSON.stringify(request))
+    return _httpClient.post(`v1/users`, JSON.stringify(request))
   }
 
   return {
