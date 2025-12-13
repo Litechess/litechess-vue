@@ -12,6 +12,7 @@ import SideInfoPanel from '@/components/info/SideInfoPanel.vue'
 import { useLiveGameStore } from '@/stores/useLiveGameStore'
 import type { useLiveGame } from '@/composables/useLiveGame'
 import type { DrawDecline, DrawProposition, GameResult } from '@/types/MoveRequest'
+import { useMediaQuery } from '@vueuse/core'
 
 let moveSound: HTMLAudioElement | null;
 let gameFinishSound: HTMLAudioElement | null;
@@ -41,6 +42,11 @@ const api = useApi()
 const route = useRoute()
 const liveGameStore = useLiveGameStore()
 const notification = useNotification()
+const isMobile = useMediaQuery('(max-width: 767px)')
+
+const justifyContent = computed(() => {
+  return isMobile.value ? 'start' : 'center'
+})
 
 const gameIdParam = computed(() => {
   return route.params.gameId.length > 0 ? String(route.params.gameId) : undefined
@@ -142,7 +148,7 @@ watch(
       chessParty.value = undefined
       return
     }
-    
+
     const loadedParty: ChessParty = await api.getChessGame(id)
     chessParty.value = {
       ...loadedParty,
@@ -156,8 +162,8 @@ watch(
 </script>
 
 <template>
-  <n-flex style="height: calc(100dvh - 2rem)" justify="center" align="center">
-    <n-flex justify="center">
+  <n-flex style="height: calc(100dvh - 2rem)" :justify="justifyContent" :align="justifyContent">
+    <n-flex :justify="justifyContent">
       <live-game-view
         send-move
         :board-state="boardState"

@@ -24,12 +24,17 @@ export default defineConfig(({ mode }) => {
             "/api": {
               target: env.VITE_API_TARGET,
               changeOrigin: true,
-              secure: false,
+            },
+            "/ws": {
+              target: env.VITE_WS_TARGET,
+              changeOrigin: true,
+              ws: true
             },
             "/identity": {
               target: env.VITE_IDENTITY_TARGET,
-              changeOrigin: true,
               secure: false,
+              changeOrigin: true,
+
               rewrite: (path) => path.replace(/^\/identity/, ''),
             },
           },

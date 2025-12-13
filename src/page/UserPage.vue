@@ -10,6 +10,17 @@ import type { ChessPartyFilter } from '@/types/Requests';
 import PartyStatsView from '@/components/parties/PartyStatsView.vue';
 import type { UserInfo } from '@/types/UserInfo';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useMediaQuery } from '@vueuse/core';
+
+const isMobile = useMediaQuery('(max-width: 767px)')
+
+const justifyContent = computed(() => {
+  return isMobile.value ? 'start' : 'center'
+})
+
+const adaptiveWidth = computed(() => {
+  return isMobile.value ? '100%' : '50%'
+})
 
 const authStore = useAuthStore()
 const userId = computed(() => {
@@ -74,8 +85,8 @@ watch(
 </script>
 
 <template>
-  <n-flex justify="center" style="height: calc(100dvh - 2rem)">
-    <n-flex style="width: 50%" vertical :size="30">
+  <n-flex :justify="justifyContent" style="height: calc(100dvh - 2rem)">
+    <n-flex :style="{ width: adaptiveWidth }" vertical :size="30">
       <n-card>
         <n-flex>
           <n-avatar :size="125" />

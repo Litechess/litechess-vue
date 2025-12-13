@@ -5,6 +5,7 @@ import DropdownButton from '../DropdownButton.vue';
 import type { TimeControl } from '@/types/ChessParty';
 import { NO_TIME_CONTROL, TIME_CONTROLS } from '@/types/ChessParty';
 import TimerIcon from '../icon/TimerIcon.vue';
+import { useMediaQuery } from '@vueuse/core';
 
 const props = defineProps<{
   isOpen?: boolean
@@ -13,6 +14,11 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['update:modelValue'])
+
+const isMobile = useMediaQuery('(max-width: 767px)')
+const adaptiveTimeControlFont = computed(() => {
+  return isMobile.value ? '0.43rem' : '0.9rem'
+})
 
 const isOpen = ref(props.isOpen ?? false)
 const timeControl = computed(() => props.modelValue ?? TIME_CONTROLS.Bullet[0])
@@ -42,7 +48,6 @@ const formatTime = (ms: number): string => {
   }
 };
 
-// Функция для форматирования инкремента (английский)
 const formatIncrement = (ms: number): string => {
   const seconds = ms / 1000;
 
@@ -78,12 +83,14 @@ function onControlClick(control: TimeControl) {
                 tertiary
                 :disabled="!isActive"
                 block
+                :style= "{ fontSize: adaptiveTimeControlFont }"
                 @click="onControlClick(control)">
                 {{ formatTime(control.initTime) }} | +{{ formatIncrement(control.increment) }}
               </n-button>
               <n-button v-else
                 type="primary"
                 block ghost
+                :style= "{ fontSize: adaptiveTimeControlFont }"
                 @click="onControlClick(control)">
                 {{ formatTime(control.initTime) }} | +{{ formatIncrement(control.increment) }}
               </n-button>
