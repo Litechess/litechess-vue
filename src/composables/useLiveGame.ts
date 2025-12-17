@@ -3,15 +3,18 @@ import { useChessSocket } from './useChessSocket'
 import type { DrawDecline, DrawProposition, GameResult, Move, MoveMessage } from '@/types/MoveRequest'
 import { useApi } from './useApi'
 import type { LiveGameResponse } from '@/types/LiveGame'
+import { readonly, ref } from 'vue'
 
 export function useLiveGame() {
+
+  const isSync = ref(false)
+
   const _api = useApi()
   const _chessSocket = useChessSocket()
   let _board: BoardApi
   let _currentGameId: string | null
 
   let _pendingMoves: Move[] = []
-  let _isSync: boolean = false
 
   let afterMoveCallback: ((move: MoveMessage, isApplied: boolean) => void) | null = null
   let afterSyncCallback: ((liveGame: LiveGameResponse) => void) | null = null
@@ -25,7 +28,7 @@ export function useLiveGame() {
 
   function _init() {
     _chessSocket.setMoveCallback((moveMessage: MoveMessage) => {
-      if (_isSync === false) {
+      if (isSync.value === false) {
         _pendingMoves.push(moveMessage.move)
         return
       }
@@ -82,7 +85,7 @@ export function useLiveGame() {
       const moves: Move[] = _mergeMoves(liveGameResponse.game.moves, _pendingMoves)
       _board.loadPgn(moves.map(m => m.san).join(' '))
       _pendingMoves = []
-      _isSync = true
+      isSync.value = true
       return liveGameResponse
     })
 
@@ -128,6 +131,7 @@ export function useLiveGame() {
   function subscribe(gameId: string, boardApi: BoardApi) {
     _board = boardApi
     _currentGameId = gameId
+    console.log("subscribe to live game " + gameId)
     _chessSocket.subscribe(gameId)
     syncGame()
   }
@@ -136,6 +140,7 @@ export function useLiveGame() {
     if(_currentGameId == null) return
     _chessSocket.unsubscribe()
     _currentGameId = null
+    isSync.value = false
   }
 
   function sendDrawProposition() {
@@ -151,6 +156,7 @@ export function useLiveGame() {
   return {
     subscribe,
     unsubcribe,
+    isSync: readonly(isSync),
     syncGame,
     setAfterMoveCallback,
     setAfterSyncCallback,

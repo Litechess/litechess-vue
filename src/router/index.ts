@@ -1,5 +1,6 @@
 
 import { useAuthStore } from '@/stores/useAuthStore'
+import { usePageParamStore } from '@/stores/usePageParamStore'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const BoardPage = () => import("@/page/BoardPage.vue")
@@ -52,6 +53,8 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
 
   const auth = useAuthStore()
+  const pageParamStore = usePageParamStore()
+
   if (to.name === 'loginCallback') {
     return next();
   }
@@ -74,6 +77,11 @@ router.beforeEach(async (to, from, next) => {
   if(to.name === 'registration' && auth.isRegistered) {
     next('/user')
     return;
+  }
+
+  if (to.name === 'play' && to.params.gameId) {
+    console.log("set last game id: " + to.params.gameId)
+    pageParamStore.setLastGameId(to.params.gameId as string)
   }
 
   next()
