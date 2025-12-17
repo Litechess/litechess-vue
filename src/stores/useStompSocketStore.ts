@@ -172,6 +172,7 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
     console.log(_activeSubscriptions)
 
     // Возвращаем функцию отписки конкретного обработчика
+    console.log(_activeSubscriptions)
     return () => unsubscribe(destination, callback)
   }
 

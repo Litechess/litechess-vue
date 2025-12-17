@@ -1,6 +1,7 @@
 import { useStompSocketStore } from '@/stores/useStompSocketStore'
 import type { DrawDecline, DrawProposition, GameEventResponse, GameResult, Move, MoveMessage } from '@/types/MoveRequest'
 import type { SocketMessage } from '@/types/Socket'
+import { computed, readonly } from 'vue'
 import type { MoveEvent } from 'vue3-chessboard'
 
 export function useChessSocket() {
@@ -8,9 +9,12 @@ export function useChessSocket() {
   type MessageHandler = (message: SocketMessage) => void
 
   const _socketStore = useStompSocketStore()
+
   let currentGameId: string | null = null
   let movesUnsubFunction: (() => void) | null
   let eventsUnsubFunction: (() => void) | null
+
+  const isConnected = computed (() => _socketStore.isConnected && movesUnsubFunction != null && eventsUnsubFunction != null)
 
   const handlers: Record<string, MessageHandler> = {
     MOVE: (message) => {
@@ -64,13 +68,16 @@ export function useChessSocket() {
       unsubscribe()
     }
 
+    console.log("subscribe to chess socket " + gameId)
     movesUnsubFunction =_socketStore.subscribe(`/${gameId}/moves`, (msg) => {
       const message: SocketMessage = JSON.parse(msg.body)
       handlers["MOVE"](message)
     })
+    console.log("success " + gameId)
 
     if(movesUnsubFunction == null) return
 
+    console.log("subscribe to event chess socket " + gameId)
     eventsUnsubFunction = _socketStore.subscribe(`/${gameId}/events`, (msg) => {
       const message: SocketMessage = JSON.parse(msg.body)
       const eventType: string = (message.payload as GameEventResponse).type
@@ -78,6 +85,7 @@ export function useChessSocket() {
     })
 
     if(eventsUnsubFunction == null) {
+      console.log('unsub moves')
       movesUnsubFunction()
       return
     }
@@ -126,12 +134,16 @@ export function useChessSocket() {
     movesUnsubFunction!()
     eventsUnsubFunction!()
     unsubConnectCallback()
+    movesUnsubFunction = null
+    eventsUnsubFunction = null
+    unsubConnectCallback = () => {}
     currentGameId = null
   }
 
   return {
     setMoveCallback,
     setConnectCallback,
+    isConnected: readonly(isConnected),
     setGameFinishCallback,
     setDrawDeclineCallback,
     sendDrawProposition,

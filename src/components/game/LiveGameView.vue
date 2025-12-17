@@ -35,6 +35,10 @@ const timerShow = computed(() => {
   return props.chessParty !== undefined && props.chessParty.timeControl?.initTime !== 0
 })
 
+const viewOnly = computed(() => {
+  return props.viewOnly || liveGame.isSync.value === false
+})
+
 const sendMove = computed(() => {
   return props.sendMove ?? false
 })
@@ -95,7 +99,11 @@ const onCreated = (api: BoardApi) => {
 const onMoved = (move: MoveEvent) => {
   if(boardState.gameStatus.value === 'NOT_FINISHED') timers.swap()
   else timers.stop()
-  if(sendMove.value && boardState.currentTurn.value !== props.playerSide) liveGame.sendMove(move)
+  console.log('move performed')
+  if(sendMove.value && boardState.currentTurn.value !== props.playerSide) {
+    console.log('try send move to server')
+    liveGame.sendMove(move)
+  }
 
   props.onMove?.(move)
 }
@@ -143,7 +151,7 @@ watch(() => props.chessParty, (party) => {
     :black-timer="timers.black.value"
     :white-timer="timers.white.value"
     :orientation="props.orientation"
-    :view-only="props.viewOnly"
+    :view-only="viewOnly"
     :player-side="props.playerSide"
     :player-info-show="props.playerInfoShow"
     :on-create="onCreated"

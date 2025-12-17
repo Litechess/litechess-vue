@@ -8,8 +8,10 @@ import GameIcon from './components/icon/GameIcon.vue'
 import { RouterLink } from 'vue-router'
 import LeaveIcon from './components/icon/LeaveIcon.vue'
 import ProfileIcon from './components/icon/ProfileIcon.vue'
+import { usePageParamStore } from './stores/usePageParamStore'
 
 const stompSocketStore = useStompSocketStore()
+const pageParamStore = usePageParamStore()
 const authStore = useAuthStore()
 const collapsed = ref(true)
 
@@ -30,6 +32,14 @@ function renderRouterLabel(label: string, to: string) {
     )
 }
 
+function renderRouterLabelReactive(label: string, getTo: () => string) {
+  return () =>
+    h(
+      RouterLink,
+      { to: getTo() },
+      { default: renderLabel(label) }
+    )
+}
 
 const menuOptions: MenuOption[] = [
   {
@@ -38,7 +48,7 @@ const menuOptions: MenuOption[] = [
     icon: renderIcon(ProfileIcon),
   },
   {
-    label: renderRouterLabel('Play', '/game'),
+    label: renderRouterLabelReactive('Play', () => `/game/${pageParamStore.lastGameId ?? ''}`),
     key: 'play-option',
     icon: renderIcon(GameIcon),
   }
