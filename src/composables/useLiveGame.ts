@@ -58,6 +58,11 @@ export function useLiveGame() {
     _chessSocket.setDrawDeclineCallback((resultMessage: DrawDecline) => {
       afterDrawDeclineCallback?.(resultMessage)
     })
+
+    _chessSocket.setConnectCallback(() => {
+      console.log("socket connected - sync game")
+      syncGame()
+    })
   }
 
   function _validateMove(move: Move): boolean {

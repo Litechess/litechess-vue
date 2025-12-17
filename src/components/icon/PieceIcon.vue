@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { PieceType, PlayerColor } from '@/types/ChessParty';
+import type { PieceType, PlayerSide } from '@/types/ChessParty';
 import { NIcon } from 'naive-ui';
 import { BishopIcon, KingIcon, KnightIcon, PawnIcon, QueenIcon, RookIcon } from '.';
 import type { Component } from 'vue';
 
 
 const props = defineProps<{
-  color: PlayerColor
+  color: PlayerSide
   piece: string
   size?: number
 }>();
@@ -20,7 +20,7 @@ const pieceMap: Record<PieceType, Component>= {
   k: KingIcon,
 };
 
-const styleColor = props.color == "w" ? "#0a0a0a" : "#d9dede"
+const styleColor = props.color == "white" ? "#0a0a0a" : "#d9dede"
 </script>
 
 <template>

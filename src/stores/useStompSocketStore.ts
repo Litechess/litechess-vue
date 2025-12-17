@@ -35,6 +35,7 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
   const _activeSubscriptions = new Map<string, SubscriptionInfo>()
   const _pendingMessages: PendingMessage[] = []
   const _pendingUnsubscriptions = new Set<string>()
+  const _connectListeners = new Set<() => void>()
 
   const isConnected = ref(false)
   const isPendingMessages = ref(false)
@@ -54,6 +55,8 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
     _client = new Client({
       brokerURL: BROKER_URL,
       reconnectDelay,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 0,
       connectHeaders: authHeaders(),
 
       onConnect: () => {
@@ -75,6 +78,8 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
         })
         _pendingSubscriptions.clear()
 
+        _connectListeners.forEach(cb => cb())
+
         if (isPendingMessages.value) sendPendingMessages()
       },
 
@@ -93,6 +98,11 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
     _pendingUnsubscriptions.clear()
     _pendingSubscriptions.clear()
     await _client?.deactivate()
+  }
+
+  const onConnect = (callback: () => void) => {
+    _connectListeners.add(callback)
+    return () => _connectListeners.delete(callback)
   }
 
   const reconnect = () => _client?.activate()
@@ -222,6 +232,7 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
     isConnected: readonly(isConnected),
     isPendingMessages: readonly(isPendingMessages),
     setPendingMessages,
+    onConnect,
     connect,
     disconnect,
     reconnect,
