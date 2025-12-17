@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ChessParty } from '@/types/ChessParty';
-import { getSimpleStatus } from '@/util/ChessPartyUtil.vue';
+import { getSimpleStatus } from '@/util/ChessPartyUtil';
 import { computed, ref, watch } from 'vue';
 import { NFlex, NProgress, NText, useThemeVars, NStatistic, NIcon} from 'naive-ui';
 import GameIcon from '../icon/GameIcon.vue';

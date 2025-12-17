@@ -1,4 +1,3 @@
-<script lang="ts">
 import type { GameStatus } from '@/types/ChessParty';
 
 const GAME_STATUSES: Record<GameStatus, GameStatus> = {
@@ -17,4 +16,4 @@ export function getSimpleStatus(status: GameStatus): GameStatus {
   return GAME_STATUSES[status];
 }
 
-</script>
+

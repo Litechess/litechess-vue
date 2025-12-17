@@ -1,12 +1,11 @@
 
-import PostRegistrationPage from '@/page/PostRegistrationPage.vue'
-import UserPage from '@/page/UserPage.vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { createRouter, createWebHistory } from 'vue-router'
 
-// const HomePage = () => import("@/page/HomePage.vue")
 const BoardPage = () => import("@/page/BoardPage.vue")
 const LoginCallbackAuthPage = () => import("@/page/LoginCallbackPage.vue")
+const UserPage = () => import("@/page/UserPage.vue")
+const PostRegistrationPage = () => import("@/page/PostRegistrationPage.vue")
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -46,12 +45,7 @@ const router = createRouter({
       name: 'registration',
       meta: { requiresAuth: true },
       component: PostRegistrationPage
-    },
-    // {
-    //   path: '/test/:gameId?',
-    //   name: 'test',
-    //   component: BoardTest
-    // }
+    }
   ],
 })
 

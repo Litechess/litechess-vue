@@ -41,6 +41,7 @@ export function useChessSocket() {
   let gameFinishCallback: (resultMessage: GameResult) => void = () => {}
   let drawPropositionCallback: (resultMessage: DrawProposition) => void = () => {}
   let drawDeclineCallback: (resultMessage: DrawDecline) => void = () => {}
+  let unsubConnectCallback: () => void = () => {}
 
   function setMoveCallback(callback: (move: MoveMessage) => void) {
     moveCallback = callback
@@ -114,14 +115,23 @@ export function useChessSocket() {
     _socketStore.send(`/${currentGameId}/events`, JSON.stringify(drawPropositionRequest))
   }
 
+  function setConnectCallback(callback: () => void) {
+    unsubConnectCallback()
+    unsubConnectCallback = _socketStore.onConnect(() => {
+      callback()
+    })
+  }
+
   function unsubscribe() {
     movesUnsubFunction!()
     eventsUnsubFunction!()
+    unsubConnectCallback()
     currentGameId = null
   }
 
   return {
     setMoveCallback,
+    setConnectCallback,
     setGameFinishCallback,
     setDrawDeclineCallback,
     sendDrawProposition,
