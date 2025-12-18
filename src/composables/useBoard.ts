@@ -30,11 +30,16 @@ export function useBoard() {
     takedPieceBlack.value = pieces.black
     takedPieceWhite.value = pieces.white
     currentTurn.value = _boardApi!.getTurnColor()
-    _boardApi.getOpeningName().then((name) => {
-      if (name != null) openingName.value = name
-      else openingName.value = 'Start position'
-    })
+
     currentPly.value = _boardApi.getCurrentPlyNumber()
+
+    if(currentPly.value < 10 || openingName.value === 'Start position') {
+      _boardApi.getOpeningName().then((name) => {
+        if (name != null) openingName.value = name
+        else openingName.value = 'Start position'
+      })
+    }
+
     stopView()
     materialDiff.value = _boardApi.getMaterialCount().materialDiff
     gameStatus.value = _getGameStatus(_boardApi)
