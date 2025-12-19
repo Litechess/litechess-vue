@@ -128,11 +128,11 @@ export function useLiveGame() {
   }
 
 
-  function subscribe(gameId: string, boardApi: BoardApi) {
+  async function subscribe(gameId: string, boardApi: BoardApi) {
     _board = boardApi
     _currentGameId = gameId
-    console.log("subscribe to live game " + gameId)
     _chessSocket.subscribe(gameId)
+    console.log("subscribe to live game " + gameId)
     syncGame()
   }
 

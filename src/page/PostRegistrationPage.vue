@@ -72,10 +72,11 @@ async function submitForm() {
 
 <template>
   <n-flex justify="center" align=center style="height: calc(100dvh - 2rem)">
-      <n-form ref="formRef" :model="model" :rules="rules">
-        <n-flex vertical justify="center" style="width: 400px">
+      <n-form ref="formRef" :model="model" :rules="rules" style="width: 50%">
+        <n-flex vertical justify="center">
           <n-form-item path="nickname" label="Nickname">
             <n-input
+              style="width: 100%"
               :disabled="isDisabledButton"
               v-model:value="model.nickname"
               maxlength="20"

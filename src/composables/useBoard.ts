@@ -33,7 +33,7 @@ export function useBoard() {
 
     currentPly.value = _boardApi.getCurrentPlyNumber()
 
-    if(currentPly.value < 10 || openingName.value === 'Start position') {
+    if(moves.value.length < 15 || openingName.value === 'Start position') {
       _boardApi.getOpeningName().then((name) => {
         if (name != null) openingName.value = name
         else openingName.value = 'Start position'
