@@ -1,7 +1,7 @@
 import { useStompSocketStore } from '@/stores/useStompSocketStore'
 import type { DrawDecline, DrawProposition, GameEventResponse, GameResult, Move, MoveMessage } from '@/types/MoveRequest'
 import type { SocketMessage } from '@/types/Socket'
-import { computed, readonly } from 'vue'
+import { computed, readonly, watch } from 'vue'
 import type { MoveEvent } from 'vue3-chessboard'
 
 export function useChessSocket() {
@@ -63,11 +63,36 @@ export function useChessSocket() {
     drawDeclineCallback = callback
   }
 
-  function subscribe(gameId: string) {
+
+  // TODO shit code in sub function
+  function waitForConnection(): Promise<void> {
+    return new Promise((resolve) => {
+      if (_socketStore.isConnected) {
+        resolve()
+        console.log("SUCCESS WAIT CONNECT")
+        return
+      }
+
+      const stop = watch(
+        () => _socketStore.isConnected,
+        (connected: boolean) => {
+          if (connected) {
+            stop()
+            resolve()
+          }
+        }
+      )
+    })
+  }
+
+
+  async function subscribe(gameId: string) {
     if(currentGameId != null) {
       unsubscribe()
     }
 
+
+    await waitForConnection()
     console.log("subscribe to chess socket " + gameId)
     movesUnsubFunction =_socketStore.subscribe(`/${gameId}/moves`, (msg) => {
       const message: SocketMessage = JSON.parse(msg.body)
