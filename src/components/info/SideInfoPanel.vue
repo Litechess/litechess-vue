@@ -49,13 +49,8 @@ const selectedTab: Ref<undefined | string> = ref(undefined)
 
 watch(
   gameId,
-  (oldVal, newVal) => {
-    if (newVal) {
-      selectedTab.value = oldVal ? selectedTab.value : GAME_TAB_NAME
-    } else {
-      selectedTab.value = MATCHMAKING_TAB_NAME
-    }
-
+  (newVal) => {
+      selectedTab.value = newVal ? GAME_TAB_NAME : MATCHMAKING_TAB_NAME
     nextTick(() => tabRef.value?.syncBarPosition())
   },
   { immediate: true },
