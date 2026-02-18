@@ -9,11 +9,14 @@ import { type BoardState, useBoard } from '@/composables/useBoard';
 import { useServerTimeSyncStore } from '@/stores/useServerTymeSyncStore';
 import type { LiveGameResponse } from '@/types/LiveGame';
 import type { GameResult } from '@/types/MoveRequest';
+import type { UserInfo } from '@/types/UserInfo';
 
 const props = defineProps<{
   sendMove?: boolean // todo refactor
   boardState?: BoardState
   playerInfoShow?: boolean
+  userInfoWhite?: UserInfo
+  userInfoBlack?: UserInfo
   orientation?: PlayerSide
   playerSide?: PlayerSide
   viewOnly?: boolean
@@ -151,6 +154,8 @@ watch(() => props.chessParty, (party) => {
     :black-timer="timers.black.value"
     :white-timer="timers.white.value"
     :orientation="props.orientation"
+    :user-info-black="props.userInfoBlack"
+    :user-info-white="props.userInfoWhite"
     :view-only="viewOnly"
     :player-side="props.playerSide"
     :player-info-show="props.playerInfoShow"

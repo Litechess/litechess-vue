@@ -43,6 +43,10 @@ export function useApi() {
     return _httpClient.post(`v1/users`, JSON.stringify(request))
   }
 
+  async function getUserAvatar(userId: string): Promise<Blob> {
+    return _httpClient.getBlob(`v1/users/${userId}/avatar`)
+  }
+
   return {
     getChessGame,
     getAllGames: getParties,
@@ -50,6 +54,7 @@ export function useApi() {
     getUserOnline,
     registerUser,
     getUserInfo,
+    getUserAvatar,
     getServerTime
   }
 }

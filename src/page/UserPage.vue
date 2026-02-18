@@ -29,6 +29,11 @@ const userId = computed(() => {
 
 const userInfo: Ref<UserInfo | undefined> = ref(undefined)
 
+const avatarUrl = computed(() => {
+  console.log(userInfo.value)
+  return userInfo.value?.avatarUrl ?? undefined
+})
+
 const userName = computed(() => {
   return userInfo.value?.nickname ?? ''
 })
@@ -89,7 +94,7 @@ watch(
     <n-flex :style="{ width: adaptiveWidth }" vertical :size="30">
       <n-card>
         <n-flex>
-          <n-avatar :size="125" />
+          <n-avatar :size="125" :src="avatarUrl ?? undefined"/>
           <n-flex style="align-items: flex-start" vertical justify="space-between">
             <n-text style="font-size: 2.5em" strong> {{ userName }}</n-text>
             <n-flex inline>

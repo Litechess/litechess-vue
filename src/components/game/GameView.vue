@@ -6,11 +6,14 @@ import { computed } from 'vue'
 import type { BoardApi, MoveEvent } from 'vue3-chessboard'
 import { type BoardState, useBoard } from '@/composables/useBoard'
 import { NFlex } from 'naive-ui'
+import type { UserInfo } from '@/types/UserInfo'
 
 
 const props = defineProps<{
   boardState?: BoardState
   whiteTimer?: Timer
+  userInfoWhite?: UserInfo
+  userInfoBlack?: UserInfo
   blackTimer?: Timer
   timerShow?: boolean
   playerInfoShow?: boolean
@@ -54,6 +57,15 @@ const playerInfoShow = computed(() => {
 const timerShow = computed(() => {
   return (props.timerShow ?? false) && props.playerInfoShow
 })
+
+const whiteAvatar = computed(() => {
+  return props.userInfoWhite?.avatarUrl
+})
+
+const blackAvatar = computed(() => {
+  return props.userInfoBlack?.avatarUrl
+})
+
 const viewOnly = computed(() => {
   if(props.viewOnly !== undefined) return props.viewOnly
   if(props.whiteTimer && props.blackTimer && props.timerShow) {
@@ -93,6 +105,7 @@ const onMoved = (move: MoveEvent) => {
     <player-area v-if="playerInfoShow"
       :player-info="playerInfoBlack"
       color="black"
+      :avatar="blackAvatar"
       :material-diff="materialDiff"
       :pieces="takedPieceBlack"
       :timer="props.blackTimer"
@@ -111,6 +124,7 @@ const onMoved = (move: MoveEvent) => {
     <player-area v-if="playerInfoShow"
       :player-info="playerInfoWhite"
       color="white"
+      :avatar="whiteAvatar"
       :material-diff="materialDiff"
       :pieces="takedPieceWhite"
       :timer="props.whiteTimer"

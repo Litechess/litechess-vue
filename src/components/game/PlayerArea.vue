@@ -8,6 +8,7 @@ import { computed } from 'vue'
 const props = defineProps<{
   playerInfo?: PlayerInfo | null
   color?: PlayerSide
+  avatar?: string | undefined
   pieces?: readonly string[]
   materialDiff?: number
   timerShow?: boolean
@@ -65,7 +66,7 @@ const userId = computed(() => {
       :user-id="userId"
       :color="color"
       :name="playerInfo.name"
-      avatar=""
+      :avatar="props.avatar"
       :pieces="pieces"
       :materialDiff="materialDiff"
     />

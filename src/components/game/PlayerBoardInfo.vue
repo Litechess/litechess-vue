@@ -8,7 +8,7 @@ import { useRouter } from 'vue-router'
 interface Props {
   userId?: string
   name: string
-  avatar: string
+  avatar: string | undefined
   pieces: readonly string[]
   materialDiff: number
   color: PlayerSide

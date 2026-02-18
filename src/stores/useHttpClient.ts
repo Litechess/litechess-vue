@@ -56,8 +56,27 @@ export const useHttpClient = defineStore('httpClient', () => {
     return response.json()
   }
 
+  const getBlob = async (endpoint: string): Promise<Blob> => {
+    const response = await fetch(`${BASE_URL}/${endpoint}`, {
+      method: 'GET',
+      headers: getHeaders(),
+    })
+
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => null)
+      throw {
+        status: response.status,
+        message: response.statusText,
+        body: errorBody,
+      }
+    }
+
+    return response.blob()
+  }
+
   return {
     get,
-    post
+    post,
+    getBlob
   }
 })

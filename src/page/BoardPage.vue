@@ -13,6 +13,7 @@ import { useLiveGameStore } from '@/stores/useLiveGameStore'
 import type { useLiveGame } from '@/composables/useLiveGame'
 import type { DrawDecline, DrawProposition, GameResult } from '@/types/MoveRequest'
 import { useMediaQuery } from '@vueuse/core'
+import type { UserInfo } from '@/types/UserInfo'
 
 let moveSound: HTMLAudioElement | null;
 let gameFinishSound: HTMLAudioElement | null;
@@ -141,6 +142,11 @@ const onMove = (move: MoveEvent) => {
 }
 
 
+
+const userInfoWhite = ref<UserInfo | undefined>(undefined)
+const userInfoBlack = ref<UserInfo | undefined>(undefined)
+
+
 watch(
   gameIdParam,
   async (id) => {
@@ -155,6 +161,12 @@ watch(
       id: String(loadedParty.id),
     }
 
+    const whitePlayerInfo = await api.getUserInfo(loadedParty.white.id)
+    userInfoWhite.value = whitePlayerInfo
+
+    const blackPlayerInfo = await api.getUserInfo(loadedParty.black.id)
+    userInfoBlack.value = blackPlayerInfo
+
   },
   { immediate: true },
 )
@@ -168,6 +180,8 @@ watch(
         send-move
         :board-state="boardState"
         :player-info-show="true"
+        :user-info-black="userInfoBlack"
+        :user-info-white="userInfoWhite"
         :chess-party="chessParty"
         :orientation="orientation"
         :view-only="viewOnly"
