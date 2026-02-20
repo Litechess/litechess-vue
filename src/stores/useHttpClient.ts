@@ -2,8 +2,16 @@ import { defineStore } from "pinia"
 import { useAuthStore } from "./useAuthStore"
 
 export const useHttpClient = defineStore('httpClient', () => {
-  const BASE_URL = '/api'
 
+  const {
+    VITE_API_DOMAIN
+  } = import.meta.env
+
+  if (!VITE_API_DOMAIN) {
+    throw new Error('API_DOMAIN env variable is not defined')
+  }
+
+  const BASE_URL = `https://${VITE_API_DOMAIN}`
   const authStore = useAuthStore()
 
   const getHeaders = () => {

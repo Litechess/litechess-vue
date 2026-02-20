@@ -4,13 +4,14 @@ import { UserManager, WebStorageStateStore } from 'oidc-client-ts'
 const {
   VITE_OIDC_REALM,
   VITE_OIDC_CLIENT_ID,
+  VITE_IDENTITY_DOMAIN
 } = import.meta.env
 
-if (!VITE_OIDC_REALM || !VITE_OIDC_CLIENT_ID) {
+if (!VITE_OIDC_REALM || !VITE_OIDC_CLIENT_ID || !VITE_IDENTITY_DOMAIN) {
   throw new Error('OIDC env variables are not defined')
 }
 
-const IDENTITY_URL: string = `/identity/realms/${VITE_OIDC_REALM}`
+const IDENTITY_URL: string = `https://${VITE_IDENTITY_DOMAIN}/realms/${VITE_OIDC_REALM}`
 
 const APP_ORIGIN = window.location.origin
 
