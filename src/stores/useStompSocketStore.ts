@@ -23,7 +23,16 @@ export type PendingMessage = {
 }
 
 export const useStompSocketStore = defineStore('stompWebSocket', () => {
-  const BROKER_URL = 'https://api.localhost/ws'
+
+  const {
+    VITE_API_DOMAIN
+  } = import.meta.env
+
+  if (!VITE_API_DOMAIN) {
+    throw new Error('VITE_API_DOMAIN env variable is not defined')
+  }
+
+  const BROKER_URL = `https://${VITE_API_DOMAIN}/ws`
   const DEFAULT_RECONNECT_DELAY = 2000
   const TOPIC_PREFIX = '/topic'
   const APP_PREFIX = '/app'
