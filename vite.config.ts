@@ -15,7 +15,7 @@ export default defineConfig(() => {
       },
     },
     server: {
-      allowedHosts: ["litechess.online", "api.litechess.online"]
+      allowedHosts: ["litechess.online"]
     }
   }
 })
