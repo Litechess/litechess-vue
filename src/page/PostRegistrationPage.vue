@@ -5,6 +5,7 @@ import type { FormInst, FormItemRule, FormRules } from "naive-ui";
 import { useApi } from "@/composables/useApi";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/useAuthStore";
+import AvatarUpload from "@/components/AvatarUpload.vue";
 
 const formRef = ref<FormInst | null>(null);
 
@@ -55,42 +56,108 @@ async function submitForm() {
     if (!errors) {
       isDisabledButton.value = true
       isUserDownload.value = false
-      await api.registerUser({ id: authStore.getId()!, nickname: model.value.nickname }).then(() => {
-        authStore.loadUser().then(() => {
-          router.replace('/user')
+
+      try {
+        const userId = authStore.getId()!
+
+        await api.registerUser({
+          id: userId,
+          nickname: model.value.nickname
         })
-      }).catch(() => {
+
+        if (avatarFile.value) {
+          await api.uploadUserAvatar(userId, avatarFile.value)
+        }
+
+        await authStore.loadUser()
+        router.replace('/user')
+      } catch (e) {
         isDisabledButton.value = false
         formRef.value?.validate()
         isUserDownload.value = true
-      });
+      }
     }
-  });
-
+  })
 }
 
+const avatarFile = ref<File | null>(null)
 </script>
 
 <template>
-  <n-flex justify="center" align=center style="height: calc(100dvh - 2rem)">
-      <n-form ref="formRef" :model="model" :rules="rules" style="width: 50%">
-        <n-flex vertical justify="center">
-          <n-form-item path="nickname" label="Nickname">
-            <n-input
-              style="width: 100%"
-              :disabled="isDisabledButton"
-              v-model:value="model.nickname"
-              maxlength="20"
-              show-count
-              @keydown.enter.prevent
-            />
-          </n-form-item>
+  <div class="page">
+    <div class="card">
+      <AvatarUpload v-model="avatarFile" />
 
-          <n-button :disabled="isDisabledButton" type="primary" round @click="submitForm">
-            Submit
-          </n-button>
-        </n-flex>
+      <n-form ref="formRef" :model="model" :rules="rules" class="form">
+        <n-form-item path="nickname" label="Nickname">
+          <n-input
+            v-model:value="model.nickname"
+            :disabled="isDisabledButton"
+            maxlength="20"
+            show-count
+            @keydown.enter.prevent
+          />
+        </n-form-item>
+
+        <n-button
+          block
+          type="primary"
+          :disabled="isDisabledButton"
+          @click="submitForm"
+        >
+          Submit
+        </n-button>
       </n-form>
-  </n-flex>
+    </div>
+  </div>
 </template>
 
+<style scoped>
+.page {
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* НЕ задаём фон — пусть берётся из темы */
+}
+
+.card {
+  width: 340px;
+  padding: 20px;
+  border-radius: 16px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+
+  /* используем токены Naive UI */
+  background-color: var(--n-color);
+  box-shadow: var(--n-box-shadow);
+  border: 1px solid var(--n-border-color);
+}
+
+/* аватар растягивается на всю ширину карточки */
+.card :deep(.avatar-upload) {
+  width: 100%;
+  aspect-ratio: 1 / 1; /* делает квадрат по ширине */
+  height: auto;
+}
+
+/* форма под ним */
+.form {
+  width: 100%;
+}
+
+.card :deep(.n-upload) {
+  width: 100%;
+  display: block;
+}
+
+.card :deep(.n-upload-trigger) {
+  width: 100%;
+  display: block;
+}
+
+
+</style>

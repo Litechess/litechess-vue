@@ -82,9 +82,31 @@ export const useHttpClient = defineStore('httpClient', () => {
     return response.blob()
   }
 
+  const postForm = async (endpoint: string, formData: FormData) => {
+    const response = await fetch(`${BASE_URL}/${endpoint}`, {
+      method: 'POST',
+      headers: {
+        ...getHeaders(),
+      },
+      body: formData,
+    })
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => null)
+      throw {
+        status: response.status,
+        message: response.statusText,
+        body: errorBody,
+      }
+    }
+
+    return response
+  }
+
   return {
     get,
     post,
+    postForm,
     getBlob
   }
 })

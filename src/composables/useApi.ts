@@ -47,12 +47,20 @@ export function useApi() {
     return _httpClient.getBlob(`api/v1/users/${userId}/avatar`)
   }
 
+  async function uploadUserAvatar(userId: string, file: File): Promise<void> {
+    const formData = new FormData()
+    formData.append("file", file)
+
+    await _httpClient.postForm(`api/v1/users/${userId}/avatar`, formData)
+  }
+
   return {
     getChessGame,
     getAllGames: getParties,
     getLiveGame,
     getUserOnline,
     registerUser,
+    uploadUserAvatar,
     getUserInfo,
     getUserAvatar,
     getServerTime
