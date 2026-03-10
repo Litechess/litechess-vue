@@ -6,12 +6,15 @@ import type { TimeControl } from '@/types/ChessParty';
 import { NO_TIME_CONTROL, TIME_CONTROLS } from '@/types/ChessParty';
 import TimerIcon from '../icon/TimerIcon.vue';
 import { useMediaQuery } from '@vueuse/core';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
   isOpen?: boolean
   isActive?: boolean
   modelValue: TimeControl
 }>();
+
+const { t } = useI18n()
 
 const emit = defineEmits(['update:modelValue'])
 
@@ -42,9 +45,9 @@ const formatTime = (ms: number): string => {
   } else if (hours >= 1) {
     return `${hours}${hours === 1 ? ' hour' : ' hours'}`;
   } else if (minutes >= 1) {
-    return `${minutes}${minutes === 1 ? ' min' : ' min'}`;
+    return `${minutes}${minutes === 1 ? ` ${t('time.minutes.short')}` : ` ${t('time.minutes.short')}`}`;
   } else {
-    return `${seconds}${seconds === 1 ? ' sec' : ' sec'}`;
+    return `${seconds}${seconds === 1 ? ` ${t('time.seconds.short')}` : ` ${t('time.seconds.short')}`}`;
   }
 };
 
@@ -52,10 +55,10 @@ const formatIncrement = (ms: number): string => {
   const seconds = ms / 1000;
 
   if (seconds === 0) return '0';
-  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 60) return `${seconds}${t('time.seconds.short')}`;
 
   const minutes = seconds / 60;
-  return `${minutes}min`;
+  return `${minutes}${t('time.minutes.short')}`;
 };
 
 function onControlClick(control: TimeControl) {
@@ -73,7 +76,7 @@ function onControlClick(control: TimeControl) {
           v-for="(controls, category) in TIME_CONTROLS"
           :key="category"
         >
-          <n-text strong>{{ category }}</n-text>
+          <n-text strong>{{ `${t(`gameMode.${category.toLocaleLowerCase()}`)}` }}</n-text>
           <n-grid :x-gap="15" :y-gap="10" :cols="3">
             <n-grid-item
               v-for="(control, index) in controls"
@@ -102,13 +105,13 @@ function onControlClick(control: TimeControl) {
             :disabled="!isActive"
             tertiary
             block
-            @click="onControlClick(NO_TIME_CONTROL)">NO TIME CONTROL</n-button>
+            @click="onControlClick(NO_TIME_CONTROL)"> {{ t('boardPage.matchmakingTab.noTimeControl') }}</n-button>
           <n-button v-else
             :disabled="!isActive"
             type="primary"
             ghost
             block
-            @click="onControlClick(NO_TIME_CONTROL)">NO TIME CONTROL</n-button>
+            @click="onControlClick(NO_TIME_CONTROL)">{{ t('boardPage.matchmakingTab.noTimeControl') }}</n-button>
         </n-flex>
       </n-flex>
     </n-card>

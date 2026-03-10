@@ -10,12 +10,15 @@ import DrawIcon from '../icon/DrawIcon.vue'
 import MinusIcon from '../icon/MinusIcon.vue'
 import type { RowData } from 'naive-ui/es/data-table/src/interface'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
   parties: ChessParty[]
   playerId: string
   loading?: boolean
 }>();
+
+const { t } = useI18n()
 
 const loading = computed(() => props.loading ?? false)
 
@@ -53,7 +56,7 @@ const formatIncrement = (ms: number): string => {
 function createColumns(): DataTableColumns<ChessParty> {
   return [
   {
-    title: 'Players',
+    title: t('userPage.partiesTab.players'),
     key: 'playerInfo',
     render(row) {
       return h(
@@ -78,7 +81,7 @@ function createColumns(): DataTableColumns<ChessParty> {
 
   },
   {
-    title: 'Result',
+    title: t('userPage.partiesTab.result'),
     key: 'result',
     render(row) {
       const status: GameStatus = getSimpleStatus(row.status)
@@ -102,14 +105,14 @@ function createColumns(): DataTableColumns<ChessParty> {
     }
   },
   {
-    title: 'Moves',
+    title: t('userPage.partiesTab.moves'),
     key: 'moves',
     render(row) {
       return h(NText, { depth: 2 }, { default: () => row.status == 'NOT_FINISHED' ? '-' : row.moves.length })
     }
   },
   {
-    title: 'Time control',
+    title: t('userPage.partiesTab.timeControl'),
     key: 'timeControl',
     render(row) {
       if(row.timeControl == null) return '-'

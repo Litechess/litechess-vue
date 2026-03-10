@@ -4,6 +4,7 @@ import { computed, h, nextTick, ref, toRefs, watch, type VNode } from 'vue'
 import ImageText from './ImageText.vue'
 import PieceText from './PieceText.vue'
 import type { GameStatus } from '@/types/ChessParty'
+import { useI18n } from 'vue-i18n';
 
 interface Props {
   moves: readonly string[]
@@ -12,6 +13,7 @@ interface Props {
   moveClick?: (ply: number) => void
 }
 
+const { t } = useI18n()
 const props = defineProps<Props>()
 const { moves } = toRefs(props)
 const moveRows = computed(() => {
@@ -26,6 +28,28 @@ const moveRows = computed(() => {
     })
   }
   return rows
+})
+
+const gameStatusTitle = computed(() => {
+  switch (props.gameStatus) {
+    case 'DRAW':
+      return t('gameStatus.draw')
+    case 'WIN_WHITE':
+      return t('gameStatus.whiteWin')
+    case 'WIN_BLACK':
+      return t('gameStatus.blackWin')
+    case 'NOT_FINISHED':
+      return t('gameStatus.notFinished')
+    case 'TIMEOUT_WIN_WHITE':
+      return t('gameStatus.timeoutWhiteWin')
+    case 'TIMEOUT_WIN_BLACK':
+      return t('gameStatus.timeoutBlackWin')
+    case 'SURRENDER_WIN_WHITE':
+      return t('gameStatus.surrenderWhiteWin')
+    case 'SURRENDER_WIN_BLACK':
+      return t('gameStatus.surrenderBlackWin')
+    default: return props.gameStatus
+  }
 })
 
 const scrollbarRef = ref(null)
@@ -100,7 +124,7 @@ function getMoveView(move: string | null): VNode {
         <tr v-if ="props.gameStatus != 'NOT_FINISHED'">
           <td colspan="3">
             <n-flex justify="center">
-              <n-text> {{ props.gameStatus }} </n-text>
+              <n-text> {{ gameStatusTitle }} </n-text>
             </n-flex>
           </td>
         </tr>

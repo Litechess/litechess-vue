@@ -4,12 +4,14 @@ import { getSimpleStatus } from '@/util/ChessPartyUtil';
 import { computed, ref, watch } from 'vue';
 import { NFlex, NProgress, NText, useThemeVars, NStatistic, NIcon} from 'naive-ui';
 import GameIcon from '../icon/GameIcon.vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
   parties: ChessParty[]
   playerId: string
 }>();
 
+const { t } = useI18n()
 const themeVars = useThemeVars()
 
 const wins = ref(0)
@@ -70,7 +72,7 @@ watch(
       <n-flex :size="50">
         <n-statistic>
           <template #label>
-            <n-text depth="3" style="font-size: 26px">Games</n-text>
+            <n-text depth="3" style="font-size: 26px"> {{ t('userPage.statsTab.parties') }}</n-text>
           </template>
           <n-flex align="center" :size="0">
               <n-icon :size="57">
@@ -82,7 +84,7 @@ watch(
         <n-flex :size="25">
           <n-statistic>
             <template #label>
-              <n-text depth="3" type="success" style="font-size: 17px">Wins</n-text>
+              <n-text depth="3" type="success" style="font-size: 17px">{{ t('userPage.statsTab.wins') }}</n-text>
             </template>
             <n-flex align="center" :size="0">
                 <n-text type="success" style="font-size: 27px;"> {{ wins }}</n-text>
@@ -90,7 +92,7 @@ watch(
           </n-statistic>
           <n-statistic>
             <template #label>
-              <n-text depth="3" type="error" style="font-size: 17px">Loses</n-text>
+              <n-text depth="3" type="error" style="font-size: 17px">{{ t('userPage.statsTab.losses') }}</n-text>
             </template>
             <n-flex align="center" :size="0">
                 <n-text type="error" style="font-size: 27px;"> {{ loses }}</n-text>
@@ -98,7 +100,7 @@ watch(
           </n-statistic>
           <n-statistic>
             <template #label>
-              <n-text depth="3" type="info" style="font-size: 17px">Draws</n-text>
+              <n-text depth="3" type="info" style="font-size: 17px">{{ t('userPage.statsTab.draws') }}</n-text>
             </template>
             <n-flex align="center" :size="0">
                 <n-text type="info" style="font-size: 27px;"> {{ draws }}</n-text>

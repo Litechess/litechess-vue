@@ -6,7 +6,9 @@ import { useLiveGameStore } from '@/stores/useLiveGameStore';
 import { NFlex } from 'naive-ui';
 import GameCard from '../GameCard.vue';
 import { RouterLink } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n()
 const activeGameIcon: Component = h(GameIcon)
 
 const props = defineProps<{
@@ -17,7 +19,7 @@ const liveGameStore = useLiveGameStore()
 
 const isOpen = ref(props.isOpen ?? false)
 const title = computed(() => {
-  return `Active games (${liveGameStore.activeGames.length})`
+  return `${t('boardPage.matchmakingTab.activeGame')} (${liveGameStore.activeGames.length})`
 })
 const selectedId = computed(() => {
   return props.selectedGameId ?? undefined

@@ -5,6 +5,7 @@ import EqualIcon from '../icon/EqualIcon.vue';
 import FlagIcon from '../icon/FlagIcon.vue';
 import BalanceIcon from '../icon/BalanceIcon.vue';
 import { NPopconfirm } from 'naive-ui';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
   viewPrevious?: () => void
@@ -15,6 +16,8 @@ const props = defineProps<{
   onSurrender?: () => void
   onDraw?: () => void
 }>();
+
+const { t } = useI18n()
 
 const buttonSize = 30;
 
@@ -36,23 +39,27 @@ const buttonSize = 30;
     <n-flex inline :size="5">
       <n-popconfirm
         v-if="showSurrenderButton"
+        :positive-text="t('common.accept')"
+        :negative-text="t('common.cancel')"
         @positive-click="onSurrender">
         <template #trigger>
           <n-button ghost type="error">
             <flag-icon />
           </n-button>
         </template>
-        Surrender?
+        {{ t('boardPage.playTab.drawOffer') }}
       </n-popconfirm>
       <n-popconfirm
         v-if="showDrawButton"
+        :positive-text="t('common.accept')"
+        :negative-text="t('common.cancel')"
         @positive-click="onDraw">
         <template #trigger>
           <n-button ghost type="info">
             <balance-icon />
           </n-button>
         </template>
-        Offer a draw?
+        {{ t('boardPage.playTab.surrenderOffer') }}
       </n-popconfirm>
     </n-flex>
   </n-flex>

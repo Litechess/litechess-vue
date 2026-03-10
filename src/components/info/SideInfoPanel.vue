@@ -8,6 +8,8 @@ import ImageText from '../ImageText.vue';
 import type { ChessParty, GameStatus } from '@/types/ChessParty';
 import type { BoardState } from '@/composables/useBoard';
 import { useMediaQuery } from '@vueuse/core';
+import { useI18n } from 'vue-i18n';
+
 
 const props = defineProps<{
   boardState?: BoardState
@@ -19,20 +21,25 @@ const props = defineProps<{
   activeGames?: readonly ChessParty[]
 }>()
 
+const { t } = useI18n()
 const isMobile = useMediaQuery('(max-width: 767px)')
 
 const adaptiveWidth = computed(() => {
   return isMobile.value ? '250px' : '400px'
 })
 
-const piecePane = h(PieceText, {
-  text: 'Game',
-  piece: 'p'
-})
+const piecePane = computed(() =>
+  h(PieceText, {
+    text: t('boardPage.play'),
+    piece: 'p'
+  })
+)
 
-const matchmakingTab = h(ImageText, {
-  text: 'Matchmaking'
-})
+const matchmakingTab = computed(() =>
+  h(ImageText, {
+    text: t('boardPage.matchmaking')
+  })
+)
 
 const boardState = computed(() => props.boardState)
 

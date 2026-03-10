@@ -5,12 +5,15 @@ import { useLiveGameStore } from '@/stores/useLiveGameStore';
 import type { TimeControl } from '@/types/ChessParty';
 import { NButton } from 'naive-ui';
 import { computed, onMounted, toRefs } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 const props = defineProps<{
   onQueue?: (inQueue: boolean) => void
   timeControl: TimeControl
 }>();
+
+const { t } = useI18n()
 
 let gameFindSound: HTMLAudioElement | null;
 onMounted(() => {
@@ -20,7 +23,7 @@ onMounted(() => {
 const matchQueue = useMatchQueue()
 const { inQueue } = toRefs(matchQueue)
 const buttonText = computed(() => {
-  return inQueue.value ? "CANCEL" : "FIND GAME"
+  return inQueue.value ? t('boardPage.matchmakingTab.cancelButton').toUpperCase() : t('boardPage.matchmakingTab.playButton').toUpperCase()
 })
 
 // const loading = computed(() => {

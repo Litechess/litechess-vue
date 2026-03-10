@@ -11,8 +11,11 @@ import PartyStatsView from '@/components/parties/PartyStatsView.vue';
 import type { UserInfo } from '@/types/UserInfo';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useMediaQuery } from '@vueuse/core';
+import { useI18n } from 'vue-i18n';
 
 const isMobile = useMediaQuery('(max-width: 767px)')
+
+const { t } = useI18n()
 
 const justifyContent = computed(() => {
   return isMobile.value ? 'start' : 'center'
@@ -46,6 +49,13 @@ const userRegistrationDate = computed(() => {
 
 
 const status = ref('offline')
+const statusName = computed(() => {
+  if(status.value === 'online') {
+    return t('userPage.online')
+  } else {
+    return t('userPage.offline')
+  }
+})
 const tabSelect = ref('Stats')
 const parties: Ref<ChessParty[]> = ref([])
 const api = useApi()
@@ -99,20 +109,20 @@ watch(
             <n-text style="font-size: 2.5em" strong> {{ userName }}</n-text>
             <n-flex inline>
               <n-flex inline :size="5">
-                <n-text style="font-size: 1em">Registration date: </n-text>
+                <n-text style="font-size: 1em"> {{ t('userPage.registrationDate') }}: </n-text>
                 <n-text strong type="info" style="font-size: 1em"> {{ userRegistrationDate }}</n-text>
               </n-flex>
               <n-flex inline :size="5">
-                <n-text style="font-size: 1em">Status: </n-text>
-                <n-text strong :type="status == 'online' ? 'success' : 'error'" style="font-size: 1em"> {{ status }}</n-text>
+                <n-text style="font-size: 1em"> {{ t('userPage.status') }}: </n-text>
+                <n-text strong :type="status == 'online' ? 'success' : 'error'" style="font-size: 1em"> {{ statusName }}</n-text>
               </n-flex>
             </n-flex>
           </n-flex>
         </n-flex>
         <n-divider/>
         <n-tabs v-model:value="tabSelect" type="segment" animated>
-          <n-tab-pane name="Stats"/>
-          <n-tab-pane name="Parties"/>
+          <n-tab-pane name="Stats" :tab="t('userPage.stats')"/>">
+          <n-tab-pane name="Parties" :tab="t('userPage.parties')"/>
         </n-tabs>
       </n-card>
       <n-card v-if="tabSelect == 'Stats'">
