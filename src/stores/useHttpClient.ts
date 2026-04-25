@@ -64,6 +64,28 @@ export const useHttpClient = defineStore('httpClient', () => {
     return response.json()
   }
 
+  const put = async (endpoint: string, body?: string) => {
+    const response = await fetch(`${BASE_URL}/${endpoint}`, {
+      method: 'PUT',
+      headers: {
+        ...getHeaders(),
+        'Content-Type': 'application/json',
+      },
+      body,
+    })
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => null)
+      throw {
+        status: response.status,
+        message: response.statusText,
+        body: errorBody,
+      }
+    }
+
+    return response.json()
+  }
+
   const getBlob = async (endpoint: string): Promise<Blob> => {
     const response = await fetch(`${BASE_URL}/${endpoint}`, {
       method: 'GET',
@@ -106,6 +128,7 @@ export const useHttpClient = defineStore('httpClient', () => {
   return {
     get,
     post,
+    put,
     postForm,
     getBlob
   }

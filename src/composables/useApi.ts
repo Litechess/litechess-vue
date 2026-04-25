@@ -1,4 +1,5 @@
 import { useHttpClient } from "@/stores/useHttpClient";
+import type { Challenge, CreateChallengeRequest } from "@/types/Challenge";
 import type { ChessParty } from "@/types/ChessParty";
 import type { LiveGameResponse } from "@/types/LiveGame";
 import type { OnlineResponse } from "@/types/OnlineResponse";
@@ -25,6 +26,18 @@ export function useApi() {
 
   async function getLiveGame(gameId: string): Promise<LiveGameResponse> {
     return _httpClient.get(`api/v1/livegames/${gameId}`)
+  }
+
+  async function getChallenge(id: string): Promise<Challenge> {
+    return _httpClient.get(`api/v1/challenges/${id}`)
+  }
+
+  async function createChallenge(request: CreateChallengeRequest): Promise<Challenge> {
+    return _httpClient.post(`api/v1/challenges`, JSON.stringify(request))
+  }
+
+  async function acceptChallenge(id: string, acceptedPlayer: string): Promise<Challenge> {
+    return _httpClient.put(`api/v1/challenges/${id}?acceptedPlayer=${encodeURIComponent(acceptedPlayer)}`)
   }
 
   async function getServerTime(): Promise<ServerNowResponse> {
@@ -57,7 +70,10 @@ export function useApi() {
   return {
     getChessGame,
     getAllGames: getParties,
+    getChallenge,
     getLiveGame,
+    createChallenge,
+    acceptChallenge,
     getUserOnline,
     registerUser,
     uploadUserAvatar,
