@@ -36,6 +36,7 @@ const isCompact = useMediaQuery('(max-width: 1100px)')
 
 const challenge = ref<Challenge | null>(null)
 const initiatorInfo = ref<UserInfo | null>(null)
+const initiatorAvatarSrc = ref<string | undefined>(undefined)
 const loading = ref(false)
 const accepting = ref(false)
 const loadFailed = ref(false)
@@ -156,6 +157,14 @@ function unsubscribeFromChallengeEvents() {
   currentSubscriptionCallback = null
 }
 
+function revokeInitiatorAvatar() {
+  if (initiatorAvatarSrc.value?.startsWith('blob:')) {
+    URL.revokeObjectURL(initiatorAvatarSrc.value)
+  }
+
+  initiatorAvatarSrc.value = undefined
+}
+
 function resolveCreatedGameId(payload: unknown): string | null {
   if (typeof payload !== 'object' || payload === null) {
     return null
@@ -206,12 +215,24 @@ async function loadChallenge(id: string) {
   loadFailed.value = false
   challenge.value = null
   initiatorInfo.value = null
+  revokeInitiatorAvatar()
   unsubscribeFromChallengeEvents()
 
   try {
     const loadedChallenge = await api.getChallenge(id)
     challenge.value = loadedChallenge
-    initiatorInfo.value = await api.getUserInfo(loadedChallenge.initiator)
+    const loadedInitiatorInfo = await api.getUserInfo(loadedChallenge.initiator)
+    initiatorInfo.value = loadedInitiatorInfo
+
+    initiatorAvatarSrc.value = loadedInitiatorInfo.avatarUrl || undefined
+    
+
+    try {
+      const avatarBlob = await api.getUserAvatar(loadedChallenge.initiator)
+      initiatorAvatarSrc.value = URL.createObjectURL(avatarBlob)
+    } catch {
+      initiatorAvatarSrc.value = loadedInitiatorInfo.avatarUrl || undefined
+    }
 
     if (loadedChallenge.status === 'CREATED') {
       await redirectToGame(loadedChallenge.id)
@@ -293,6 +314,7 @@ watch(
 
 onBeforeUnmount(() => {
   unsubscribeFromChallengeEvents()
+  revokeInitiatorAvatar()
 })
 </script>
 
@@ -320,9 +342,11 @@ onBeforeUnmount(() => {
             <n-avatar
               round
               :size="56"
-              :src="initiatorInfo?.avatarUrl || undefined"
+              :src="initiatorInfo?.avatarUrl"
             >
-              {{ (initiatorInfo?.nickname ?? '?').slice(0, 1).toUpperCase() }}
+              <template v-if="!initiatorInfo?.avatarUrl">
+                {{ (initiatorInfo?.nickname ?? '?').slice(0, 1).toUpperCase() }}
+              </template>
             </n-avatar>
 
             <n-flex vertical :size="4">
