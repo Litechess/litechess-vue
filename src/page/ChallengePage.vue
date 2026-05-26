@@ -21,7 +21,7 @@ import {
   NText,
   useNotification,
 } from 'naive-ui'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -33,10 +33,10 @@ const router = useRouter()
 const notification = useNotification()
 const { t } = useI18n()
 const isCompact = useMediaQuery('(max-width: 1100px)')
+let gameFindSound: HTMLAudioElement | null = null
 
 const challenge = ref<Challenge | null>(null)
 const initiatorInfo = ref<UserInfo | null>(null)
-const initiatorAvatarSrc = ref<string | undefined>(undefined)
 const loading = ref(false)
 const accepting = ref(false)
 const loadFailed = ref(false)
@@ -113,6 +113,12 @@ const challengeLink = computed(() => {
   return `${window.location.origin}/challenge/${challenge.value.id}`
 })
 
+const shouldSubscribeToEvents = computed(() => {
+  return challenge.value?.status === 'WAITING'
+    || challenge.value?.status === 'ACCEPTED'
+    || challenge.value?.status === undefined
+})
+
 function mapColorToSide(color: PlayerColor): PlayerSide {
   return color === 'WHITE' ? 'white' : 'black'
 }
@@ -157,14 +163,6 @@ function unsubscribeFromChallengeEvents() {
   currentSubscriptionCallback = null
 }
 
-function revokeInitiatorAvatar() {
-  if (initiatorAvatarSrc.value?.startsWith('blob:')) {
-    URL.revokeObjectURL(initiatorAvatarSrc.value)
-  }
-
-  initiatorAvatarSrc.value = undefined
-}
-
 function resolveCreatedGameId(payload: unknown): string | null {
   if (typeof payload !== 'object' || payload === null) {
     return null
@@ -187,6 +185,9 @@ function resolveCreatedGameId(payload: unknown): string | null {
 
 async function redirectToGame(gameId: string) {
   unsubscribeFromChallengeEvents()
+  if (gameFindSound !== null) {
+    gameFindSound.play()
+  }
   await router.push(`/game/${gameId}`)
 }
 
@@ -215,31 +216,19 @@ async function loadChallenge(id: string) {
   loadFailed.value = false
   challenge.value = null
   initiatorInfo.value = null
-  revokeInitiatorAvatar()
   unsubscribeFromChallengeEvents()
 
   try {
     const loadedChallenge = await api.getChallenge(id)
     challenge.value = loadedChallenge
-    const loadedInitiatorInfo = await api.getUserInfo(loadedChallenge.initiator)
-    initiatorInfo.value = loadedInitiatorInfo
-
-    initiatorAvatarSrc.value = loadedInitiatorInfo.avatarUrl || undefined
-    
-
-    try {
-      const avatarBlob = await api.getUserAvatar(loadedChallenge.initiator)
-      initiatorAvatarSrc.value = URL.createObjectURL(avatarBlob)
-    } catch {
-      initiatorAvatarSrc.value = loadedInitiatorInfo.avatarUrl || undefined
-    }
+    initiatorInfo.value = await api.getUserInfo(loadedChallenge.initiator)
 
     if (loadedChallenge.status === 'CREATED') {
       await redirectToGame(loadedChallenge.id)
       return
     }
 
-    if (loadedChallenge.status === 'WAITING' || loadedChallenge.status === 'ACCEPTED' || loadedChallenge.status === undefined) {
+    if (shouldSubscribeToEvents.value) {
       subscribeToChallengeEvents(loadedChallenge.id)
     }
   } catch {
@@ -312,9 +301,12 @@ watch(
   { immediate: true },
 )
 
+onMounted(() => {
+  gameFindSound = new Audio('/sounds/Confirmation.mp3')
+})
+
 onBeforeUnmount(() => {
   unsubscribeFromChallengeEvents()
-  revokeInitiatorAvatar()
 })
 </script>
 

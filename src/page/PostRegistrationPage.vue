@@ -17,29 +17,29 @@ const api = useApi();
 const authStore = useAuthStore()
 const router = useRouter();
 
-const nicknameRegex = /^[a-zA-Z0-9]+$/;
+const nicknameRegex = /^[a-zA-Zа-яА-ЯёЁ0-9]+$/;
 const isUserDownload = ref(true);
 
 const rules: FormRules = {
   nickname: [
     {
       required: true,
-      message: "Nickname is required",
+      message: "Имя пользователя обязательно",
       trigger: ["input", "blur"]
     },
     {
       validator(rule: FormItemRule, value: string) {
         if (!nicknameRegex.test(value)) {
           return new Error(
-            "Only letters, numbers are allowed. No spaces or special symbols."
+            "Разрешены только буквы и цифры. Без пробелов и специальных символов."
           );
         }
         if (value.length > 20) {
-          return new Error("Maximum length is 20 characters");
+          return new Error("Максимальная длина — 20 символов");
         }
 
         if(isUserDownload.value == false) {
-          return new Error("User with this nickname already exists");
+          return new Error("Пользователь с таким никнеймом уже существует");
         }
 
         return true;
@@ -89,12 +89,19 @@ const avatarFile = ref<File | null>(null)
       <AvatarUpload v-model="avatarFile" />
 
       <n-form ref="formRef" :model="model" :rules="rules" class="form">
-        <n-form-item path="nickname" label="Nickname">
+        <n-form-item path="nickname">
+          <template #label>
+            <div class="nickname-label">
+              <span>Имя пользователя</span>
+              <span class="nickname-label__hint">Это имя будут видеть другие пользователи</span>
+            </div>
+          </template>
           <n-input
             v-model:value="model.nickname"
             :disabled="isDisabledButton"
             maxlength="20"
             show-count
+            placeholder=" "
             @keydown.enter.prevent
           />
         </n-form-item>
@@ -105,7 +112,7 @@ const avatarFile = ref<File | null>(null)
           :disabled="isDisabledButton"
           @click="submitForm"
         >
-          Submit
+          Зарегистрироваться
         </n-button>
       </n-form>
     </div>
@@ -147,6 +154,25 @@ const avatarFile = ref<File | null>(null)
 /* форма под ним */
 .form {
   width: 100%;
+}
+
+.nickname-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.2;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.nickname-label__hint {
+  font-size: 12px;
+  color: rgba(128, 128, 128, 0.9);
+  font-weight: 400;
+}
+
+.form :deep(.n-form-item) {
+  margin-bottom: 10px;
 }
 
 .card :deep(.n-upload) {
