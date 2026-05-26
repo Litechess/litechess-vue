@@ -28,7 +28,7 @@ const stompSocketStore = useStompSocketStore()
 const pageParamStore = usePageParamStore()
 const authStore = useAuthStore()
 
-const collapsed = ref(true)
+const collapsed = ref(false)
 
 const { t, locale } = useI18n()
 
@@ -171,6 +171,7 @@ const themeOverrides = {
           
           <!-- MAIN MENU -->
           <n-menu
+            class="app-sider-menu"
             :collapsed="collapsed"
             :collapsed-width="40"
             :collapsed-icon-size="22"
@@ -179,6 +180,7 @@ const themeOverrides = {
 
           <!-- FOOTER MENU -->
           <n-menu
+            class="app-sider-menu"
             :collapsed="collapsed"
             :collapsed-width="40"
             :collapsed-icon-size="22"
@@ -201,4 +203,9 @@ const themeOverrides = {
 </template>
 
 <style scoped>
+.app-sider-menu :deep(.n-menu-item-content-header),
+.app-sider-menu :deep(.n-submenu-children .n-menu-item-content-header),
+.app-sider-menu :deep(.n-submenu .n-menu-item-content-header) {
+  font-size: 24px;
+}
 </style>

@@ -65,7 +65,8 @@ onBeforeUnmount(() => revokePreview())
 
       <template v-else>
         <div class="avatar-placeholder">
-          Click to upload avatar
+          Кликните, чтобы загрузить фото профиля
+          (опционально)
         </div>
       </template>
     </div>
@@ -99,7 +100,7 @@ onBeforeUnmount(() => revokePreview())
 }
 
 .avatar-placeholder {
-  font-size: 12px;
+  font-size: 16px;
   color: #999;
   text-align: center;
   padding: 8px;
