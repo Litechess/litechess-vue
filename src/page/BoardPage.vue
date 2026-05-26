@@ -161,6 +161,14 @@ watch(
       id: String(loadedParty.id),
     }
 
+    const currentUserId = authStore.getId()
+    const isCurrentUserPlayer = currentUserId !== null
+      && (loadedParty.white.id === currentUserId || loadedParty.black.id === currentUserId)
+
+    if (loadedParty.status === 'NOT_FINISHED' && isCurrentUserPlayer) {
+      liveGameStore.add(chessParty.value)
+    }
+
     const whitePlayerInfo = await api.getUserInfo(loadedParty.white.id)
     userInfoWhite.value = whitePlayerInfo
 
