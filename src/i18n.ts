@@ -81,6 +81,7 @@ const messages = {
       accepting: "Accepting...",
       acceptAction: "Accept challenge",
       creatingParty: "Creating game",
+      waitOnPageHint: "Stay on this page. The game will start as soon as another user accepts the challenge.",
       copyAction: "Copy",
       copySuccess: "Link copied.",
       copyError: "Failed to copy link.",
@@ -92,6 +93,28 @@ const messages = {
       acceptError: "Failed to accept challenge.",
       notFound: "Challenge not found",
       noAccess: "This challenge is reserved for another player."
+    },
+    challengesPage: {
+      title: "Challenges",
+      subtitle: "Browse all active challenges and open any challenge page directly.",
+      empty: "No challenges yet.",
+      loadErrorTitle: "Challenges are unavailable",
+      loadErrorDescription: "Failed to load the challenge list.",
+      anyone: "Anyone",
+      noTimeControl: "No time control",
+      sideWhite: "White",
+      sideBlack: "Black",
+      sideRandom: "Random",
+      statusWaiting: "Waiting",
+      statusAccepted: "Accepted",
+      statusCreated: "Game created",
+      columns: {
+        initiator: "Initiator",
+        access: "Access",
+        side: "Side",
+        timeControl: "Time control",
+        status: "Status"
+      }
     },
     gameStatus: {
       draw: "Draw",
@@ -106,6 +129,7 @@ const messages = {
     sidePanel: {
       profile: "Profile",
       game: "Play",
+      challenges: "Challenges",
       exit: "Log out",
       language: 'Language'
     }
@@ -190,6 +214,7 @@ const messages = {
         accepting: "Принятие...",
         acceptAction: "Принять вызов",
         creatingParty: "Создаем партию",
+        waitOnPageHint: "Ожидайте на этой странице. Партия начнется сразу же, как другой пользователь примет вызов.",
         copyAction: "Копировать",
         copySuccess: "Ссылка скопирована.",
         copyError: "Не удалось скопировать ссылку.",
@@ -201,6 +226,28 @@ const messages = {
         acceptError: "Не удалось принять вызов.",
         notFound: "Вызов не найден",
         noAccess: "Этот вызов предназначен другому игроку."
+    },
+    challengesPage: {
+        title: "Вызовы",
+        subtitle: "Список всех созданных вызовов с быстрым переходом на страницу конкретного вызова.",
+        empty: "Вызовов пока нет.",
+        loadErrorTitle: "Список вызовов недоступен",
+        loadErrorDescription: "Не удалось загрузить список вызовов.",
+        anyone: "Любой",
+        noTimeControl: "Без контроля времени",
+        sideWhite: "Белые",
+        sideBlack: "Черные",
+        sideRandom: "Случайно",
+        statusWaiting: "Ожидает",
+        statusAccepted: "Принят",
+        statusCreated: "Партия создана",
+        columns: {
+            initiator: "Инициатор",
+            access: "Доступ",
+            side: "Сторона",
+            timeControl: "Контроль времени",
+            status: "Статус"
+        }
     },
     gameStatus: {
         draw: "Ничья",
@@ -216,6 +263,7 @@ const messages = {
     sidePanel: {
         profile: "Профиль",
         game: "Играть",
+        challenges: "Вызовы",
         exit: "Выйти",
         language: 'Язык'
     }

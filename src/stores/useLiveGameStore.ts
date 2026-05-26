@@ -11,7 +11,7 @@ export const useLiveGameStore = defineStore('liveGame', () => {
   const authStore = useAuthStore()
 
   const activeGames = ref<ChessParty[]>([])
-  const gameSockets = new Map()
+  const gameSockets = new Map<string, ReturnType<typeof useChessSocket>>()
 
   async function load(gameId: string): Promise<ChessParty | void> {
     return api.getChessGame(gameId).then((game: ChessParty) => {
@@ -30,7 +30,7 @@ export const useLiveGameStore = defineStore('liveGame', () => {
   }
 
   function add(game: ChessParty): void {
-    if(game.status !== 'NOT_FINISHED' || gameSockets.has(game.id)) return;
+    if(game.status !== 'NOT_FINISHED' || gameSockets.has(game.id)) return
     const chessSocket = useChessSocket()
     chessSocket.setGameFinishCallback(() => {
       remove(game.id)
@@ -58,6 +58,7 @@ export const useLiveGameStore = defineStore('liveGame', () => {
   return {
     activeGames: shallowReadonly(activeGames),
     load,
+    add,
     remove
   }
 })

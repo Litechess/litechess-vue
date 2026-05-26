@@ -32,6 +32,10 @@ export function useApi() {
     return _httpClient.get(`api/v1/challenges/${id}`)
   }
 
+  async function getAllChallenges(): Promise<Challenge[]> {
+    return _httpClient.get(`api/v1/challenges`)
+  }
+
   async function createChallenge(request: CreateChallengeRequest): Promise<Challenge> {
     return _httpClient.post(`api/v1/challenges`, JSON.stringify(request))
   }
@@ -71,6 +75,7 @@ export function useApi() {
     getChessGame,
     getAllGames: getParties,
     getChallenge,
+    getAllChallenges,
     getLiveGame,
     createChallenge,
     acceptChallenge,

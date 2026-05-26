@@ -5,6 +5,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const BoardPage = () => import("@/page/BoardPage.vue")
 const ChallengePage = () => import("@/page/ChallengePage.vue")
+const ChallengesPage = () => import("@/page/ChallengesPage.vue")
 const LoginCallbackAuthPage = () => import("@/page/LoginCallbackPage.vue")
 const UserPage = () => import("@/page/UserPage.vue")
 const PostRegistrationPage = () => import("@/page/PostRegistrationPage.vue")
@@ -27,6 +28,12 @@ const router = createRouter({
       path: '/game/:gameId?',
       name: 'play',
       component: BoardPage,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/challenges',
+      name: 'challenges',
+      component: ChallengesPage,
       meta: { requiresAuth: true }
     },
     {

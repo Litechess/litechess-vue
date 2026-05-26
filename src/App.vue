@@ -23,6 +23,7 @@ import ProfileIcon from './components/icon/ProfileIcon.vue'
 import { usePageParamStore } from './stores/usePageParamStore'
 import { useI18n } from 'vue-i18n'
 import LanguageIcon from './components/icon/LanguageIcon.vue'
+import { List } from '@vicons/ionicons5'
 
 const stompSocketStore = useStompSocketStore()
 const pageParamStore = usePageParamStore()
@@ -78,6 +79,11 @@ const menuOptions = computed<MenuOption[]>(() => [
     ),
     key: 'play-option',
     icon: renderIcon(GameIcon)
+  },
+  {
+    label: renderRouterLabel(t('sidePanel.challenges'), '/challenges'),
+    key: 'challenges-option',
+    icon: renderIcon(List)
   }
 ])
 
@@ -155,13 +161,14 @@ const themeOverrides = {
   <n-config-provider :theme="theme" :theme-overrides="themeOverrides">
     <n-global-style />
 
-    <n-layout has-sider>
+    <n-layout has-sider style="min-height: 100dvh">
       <n-layout-sider
         v-if="authStore.isRegistered"
         collapse-mode="width"
         :collapsed="collapsed"
         :collapsed-width="40"
         :width="200"
+        content-style="height: 100%"
         show-trigger="bar"
         bordered
         @collapse="collapsed = true"
@@ -192,7 +199,7 @@ const themeOverrides = {
       </n-layout-sider>
 
       <n-layout-content
-        content-style="min-height: calc(100dvh - 6rem); padding: 1rem; min-width: 320px;"
+        content-style="min-height: 100dvh; padding: 1rem; min-width: 320px;"
       >
         <n-notification-provider>
           <router-view />

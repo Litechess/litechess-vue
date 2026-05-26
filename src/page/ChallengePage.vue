@@ -395,6 +395,9 @@ onBeforeUnmount(() => {
                 {{ t('challengePage.copyAction') }}
               </n-button>
             </n-input-group>
+            <n-text depth="3">
+              {{ t('challengePage.waitOnPageHint') }}
+            </n-text>
           </n-flex>
         </n-flex>
       </n-card>
