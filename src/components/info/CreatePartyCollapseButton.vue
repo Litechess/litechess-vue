@@ -75,7 +75,7 @@ function confirmCreateParty(): void {
           <n-text strong>{{ t('boardPage.matchmakingTab.initialTime') }}</n-text>
           <n-slider
             v-model:value="initialMinutes"
-            :min="0"
+            :min="0.5"
             :max="180"
             :step="0.5"
             :format-tooltip="formatMinutes"

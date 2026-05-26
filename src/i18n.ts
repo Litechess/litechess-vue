@@ -59,7 +59,7 @@ const messages = {
         confirmCreateParty: "Confirm"
       },
       playTab: {
-        surrenderOffer: "Resign?",
+        surrenderOffer: "Surrender?",
         drawOffer: "Offer draw?"
       }
     },
@@ -100,8 +100,8 @@ const messages = {
       notFinished: "Game in progress",
       timeoutWhiteWin: "White wins by timeout",
       timeoutBlackWin: "Black wins by timeout",
-      surrenderWhiteWin: "White wins by resignation",
-      surrenderBlackWin: "Black wins by resignation"
+      surrenderWhiteWin: "White wins by surrender",
+      surrenderBlackWin: "Black wins by surrender"
     },
     sidePanel: {
       profile: "Profile",

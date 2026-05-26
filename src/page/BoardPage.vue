@@ -97,9 +97,9 @@ const onCreate = (api: BoardApi, liveGamee: ReturnType<typeof useLiveGame>): voi
       return;
     }
       notification['info']({
-        duration: 7000,
-        title: 'Draw Proposition',
-        content: 'Opponent has proposed a draw. Send draw proposition for accept.',
+        duration: 9000,
+        title: 'Оппоненит предложил ничью',
+        content: 'Отправьте предложение ничьи для принятия, или оно будет отменено следующим ходом.',
     })
   })
 
@@ -110,8 +110,8 @@ const onCreate = (api: BoardApi, liveGamee: ReturnType<typeof useLiveGame>): voi
 
     notification['info']({
       duration: 5000,
-      title: 'Draw Declined',
-      content: 'Draw proposition has been declined by your opponent.',
+      title: 'Ничья отклонена',
+      content: '',
     })
   })
 }
