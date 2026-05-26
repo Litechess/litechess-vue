@@ -47,7 +47,7 @@ const buttonSize = 30;
             <flag-icon />
           </n-button>
         </template>
-        {{ t('boardPage.playTab.drawOffer') }}
+        {{ t('boardPage.playTab.surrenderOffer') }}
       </n-popconfirm>
       <n-popconfirm
         v-if="showDrawButton"
@@ -59,7 +59,7 @@ const buttonSize = 30;
             <balance-icon />
           </n-button>
         </template>
-        {{ t('boardPage.playTab.surrenderOffer') }}
+        {{ t('boardPage.playTab.drawOffer') }}
       </n-popconfirm>
     </n-flex>
   </n-flex>

@@ -28,12 +28,12 @@ const stompSocketStore = useStompSocketStore()
 const pageParamStore = usePageParamStore()
 const authStore = useAuthStore()
 
-const collapsed = ref(false)
+const collapsed = ref(true)
 
 const { t, locale } = useI18n()
 
 function renderIcon(icon: Component) {
-  return () => h(NIcon, { size: 30 }, { default: () => h(icon) })
+  return () => h(NIcon, { size: 35 }, { default: () => h(icon) })
 }
 
 function renderLabel(label: string) {
