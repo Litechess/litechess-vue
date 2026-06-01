@@ -148,6 +148,13 @@ export function useChessSocket() {
     _socketStore.send(`/${currentGameId}/events`, JSON.stringify(drawPropositionRequest))
   }
 
+  function sendDrawDecline() {
+    if(currentGameId == null) return
+
+    const drawDeclineRequest = { event: 'DRAW_DECLINE' }
+    _socketStore.send(`/${currentGameId}/events`, JSON.stringify(drawDeclineRequest))
+  }
+
   function setConnectCallback(callback: () => void) {
     unsubConnectCallback()
     unsubConnectCallback = _socketStore.onConnect(() => {
@@ -172,6 +179,7 @@ export function useChessSocket() {
     setGameFinishCallback,
     setDrawDeclineCallback,
     sendDrawProposition,
+    sendDrawDecline,
     setDrawPropositionCallback,
     subscribe,
     unsubscribe,

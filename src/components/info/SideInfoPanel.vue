@@ -16,8 +16,10 @@ const props = defineProps<{
   gameStatus?: GameStatus
   gameId?: string
   showGameEventButton?: boolean
+  showDrawOfferPanel?: boolean
   onSurrender?: () => void
   onDraw?: () => void
+  onDrawDecline?: () => void
   activeGames?: readonly ChessParty[]
 }>()
 
@@ -80,8 +82,10 @@ watch(
         :tab="piecePane">
         <game-info-view v-if="boardState"
           :show-game-event-button="props.showGameEventButton"
+          :show-draw-offer-panel="props.showDrawOfferPanel"
           :on-surrender="props.onSurrender"
           :on-draw="props.onDraw"
+          :on-draw-decline="props.onDrawDecline"
           :board-state="boardState"
           :game-status="props.gameStatus"/>
       </n-tab-pane>

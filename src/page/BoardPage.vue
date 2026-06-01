@@ -79,6 +79,7 @@ const viewOnly = computed(() => {
 
 const boardApi: Ref<BoardApi | undefined> = ref(undefined)
 const liveGame: Ref<ReturnType<typeof useLiveGame> | undefined> = ref(undefined)
+const isDrawOfferPending = ref(false)
 
 const onSurrender = () => {
   liveGame.value?.surrender()
@@ -88,22 +89,31 @@ const onDraw = () => {
   liveGame.value?.sendDrawProposition()
 }
 
+const onDrawDecline = () => {
+  liveGame.value?.sendDrawDecline()
+  isDrawOfferPending.value = false
+}
+
 const onCreate = (api: BoardApi, liveGamee: ReturnType<typeof useLiveGame>): void => {
   boardApi.value = api
   liveGame.value = liveGamee
 
   liveGame.value.setAfterDrawPropositionCallback((drawProposition: DrawProposition) => {
     if(drawProposition.playerId === authStore.getId()) {
+      notification['info']({
+        duration: 5000,
+        title: 'Предложение ничьи отправлено',
+        content: 'Ожидание ответа оппонента. Предложение отменится после следующего хода.',
+      })
       return;
     }
-      notification['info']({
-        duration: 9000,
-        title: 'Оппоненит предложил ничью',
-        content: 'Отправьте предложение ничьи для принятия, или оно будет отменено следующим ходом.',
-    })
+
+    isDrawOfferPending.value = true
   })
 
   liveGame.value.setAfterDrawDeclineCallback((drawDecline: DrawDecline) => {
+    isDrawOfferPending.value = false
+
     if(drawDecline.playerId === authStore.getId()) {
       return;
     }
@@ -120,6 +130,7 @@ const onGameFinish = (gameResult: GameResult) => {
   if(chessParty.value === undefined) return
   if(gameFinishSound !== null) gameFinishSound.play()
   chessParty.value.status = gameResult.status
+  isDrawOfferPending.value = false
 }
 
 const showGameEventButtons = computed(() => {
@@ -148,8 +159,19 @@ const userInfoBlack = ref<UserInfo | undefined>(undefined)
 
 
 watch(
+  () => boardState.moves.value.length,
+  (newLength, oldLength) => {
+    if (oldLength !== undefined && newLength > oldLength) {
+      isDrawOfferPending.value = false
+    }
+  },
+)
+
+watch(
   gameIdParam,
   async (id) => {
+    isDrawOfferPending.value = false
+
     if (id === undefined) {
       chessParty.value = undefined
       return
@@ -204,7 +226,9 @@ watch(
           :gameId="gameIdParam"
           :on-surrender="onSurrender"
           :on-draw="onDraw"
+          :on-draw-decline="onDrawDecline"
           :show-game-info="showGameInfo"
+          :show-draw-offer-panel="isDrawOfferPending"
           :board-state="boardState"
           :game-status="gameStatus"
           :active-games="liveGameStore.activeGames"/>

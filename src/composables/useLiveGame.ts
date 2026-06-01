@@ -148,6 +148,11 @@ export function useLiveGame() {
     _chessSocket.sendDrawProposition()
   }
 
+  function sendDrawDecline() {
+    if(_currentGameId == null) return
+    _chessSocket.sendDrawDecline()
+  }
+
   function surrender() {
     if(_currentGameId == null) return
     _chessSocket.surrender()
@@ -161,6 +166,7 @@ export function useLiveGame() {
     setAfterMoveCallback,
     setAfterSyncCallback,
     sendDrawProposition,
+    sendDrawDecline,
     setAfterDrawDeclineCallback,
     setAfterDrawPropositionCallback,
     setAfterGameFinishCallback,

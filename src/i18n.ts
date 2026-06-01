@@ -60,7 +60,10 @@ const messages = {
       },
       playTab: {
         surrenderOffer: "Surrender?",
-        drawOffer: "Offer draw?"
+        drawOffer: "Offer draw?",
+        drawOfferIncomingTitle: "Opponent offers a draw",
+        drawOfferIncomingDescription: "Accept to finish the game as a draw, or decline. The offer is canceled after the next move.",
+        declineDrawOffer: "Decline"
       }
     },
     challengePage: {
@@ -193,7 +196,10 @@ const messages = {
         },
         playTab: {
             surrenderOffer: "Cдаться?",
-            drawOffer: "Предложить ничью?"
+            drawOffer: "Предложить ничью?",
+            drawOfferIncomingTitle: "Оппонент предлагает ничью",
+            drawOfferIncomingDescription: "Примите предложение, чтобы завершить партию ничьей, или отклоните его. После следующего хода предложение отменится.",
+            declineDrawOffer: "Отклонить"
         }
     },
     challengePage: {
