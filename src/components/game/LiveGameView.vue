@@ -63,7 +63,8 @@ function getLastTimerValue(timerHistory: number[], side: PlayerSide): number | n
 }
 
 
-liveGame.setAfterSyncCallback((liveGame: LiveGameResponse) => {
+liveGame.setAfterSyncCallback(async (liveGame: LiveGameResponse) => {
+  await serverTimeStore.ensureSynced()
   boardState.updateState()
   if (props.chessParty?.timeControl?.initTime !== 0) {
     timers.white.value.duration = getRemaining(liveGame.game.currentTimers.WHITE)

@@ -12,6 +12,7 @@ export const useServerTimeSyncStore = defineStore('serverTimeSync', () => {
 
   /** Время последней синхронизации (локальное время клиента) */
   const lastSync = ref<Date | null>(null)
+  let syncPromise: Promise<void> | null = null
 
   /** Таймер для повторной синхронизации */
   let timer: ReturnType<typeof setInterval> | null = null
@@ -30,20 +31,30 @@ export const useServerTimeSyncStore = defineStore('serverTimeSync', () => {
    * Синхронизировать локальное время с серверным
    */
   async function sync(): Promise<void> {
-    try {
-      const startPerf = performance.now()
-      const serverNow = await fetchServerNow()
-      const endPerf = performance.now()
-
-      const measuredPing = (endPerf - startPerf) / 2
-      const computedOffset = serverNow + measuredPing - Date.now()
-
-      ping.value = measuredPing
-      offset.value = computedOffset
-      lastSync.value = new Date()
-    } catch (e) {
-      console.error('[ServerTimeSync] Ошибка синхронизации:', e)
+    if (syncPromise !== null) {
+      return syncPromise
     }
+
+    syncPromise = (async () => {
+      try {
+        const startPerf = performance.now()
+        const serverNow = await fetchServerNow()
+        const endPerf = performance.now()
+
+        const measuredPing = (endPerf - startPerf) / 2
+        const computedOffset = serverNow + measuredPing - Date.now()
+
+        ping.value = measuredPing
+        offset.value = computedOffset
+        lastSync.value = new Date()
+      } catch (e) {
+        console.error('[ServerTimeSync] Ошибка синхронизации:', e)
+      } finally {
+        syncPromise = null
+      }
+    })()
+
+    return syncPromise
   }
 
   /**
@@ -65,11 +76,18 @@ export const useServerTimeSyncStore = defineStore('serverTimeSync', () => {
     }
   }
 
+  async function ensureSynced(): Promise<void> {
+    if (lastSync.value !== null) {
+      return
+    }
+
+    await sync()
+  }
+
   /**
    * Получить текущее серверное время (локально, с учётом offset)
    */
   function getServerNow(): number {
-    console.log(offset.value + " OFFSET")
     return Date.now() + offset.value
   }
 
@@ -88,6 +106,7 @@ export const useServerTimeSyncStore = defineStore('serverTimeSync', () => {
     start,
     stop,
     sync,
+    ensureSynced,
     getServerNow,
   }
 })

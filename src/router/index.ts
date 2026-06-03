@@ -6,6 +6,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 const BoardPage = () => import("@/page/BoardPage.vue")
 const ChallengePage = () => import("@/page/ChallengePage.vue")
 const ChallengesPage = () => import("@/page/ChallengesPage.vue")
+const GamesPage = () => import("@/page/GamesPage.vue")
 const LoginCallbackAuthPage = () => import("@/page/LoginCallbackPage.vue")
 const UserPage = () => import("@/page/UserPage.vue")
 const UsersPage = () => import("@/page/UsersPage.vue")
@@ -35,6 +36,12 @@ const router = createRouter({
       path: '/challenges',
       name: 'challenges',
       component: ChallengesPage,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/games',
+      name: 'games',
+      component: GamesPage,
       meta: { requiresAuth: true }
     },
     {

@@ -119,6 +119,19 @@ const messages = {
         status: "Status"
       }
     },
+    gamesPage: {
+      title: "Live Games",
+      empty: "No live games.",
+      loadErrorTitle: "Games are unavailable",
+      loadErrorDescription: "Failed to load the live games list.",
+      noTimeControl: "No time control",
+      columns: {
+        white: "White",
+        black: "Black",
+        moves: "Moves",
+        timeControl: "Time control"
+      }
+    },
     usersPage: {
       title: "Players",
       empty: "No users found.",
@@ -278,6 +291,19 @@ const messages = {
             side: "Сторона",
             timeControl: "Контроль времени",
             status: "Статус"
+        }
+    },
+    gamesPage: {
+        title: "Активные партии",
+        empty: "Активных партий нет.",
+        loadErrorTitle: "Список партий недоступен",
+        loadErrorDescription: "Не удалось загрузить список активных партий.",
+        noTimeControl: "Без контроля времени",
+        columns: {
+            white: "Белые",
+            black: "Черные",
+            moves: "Ходы",
+            timeControl: "Контроль времени"
         }
     },
     usersPage: {
