@@ -24,6 +24,7 @@ import { usePageParamStore } from './stores/usePageParamStore'
 import { useI18n } from 'vue-i18n'
 import LanguageIcon from './components/icon/LanguageIcon.vue'
 import { List } from '@vicons/ionicons5'
+import UserListIcon from './components/icon/UserListIcon.vue'
 
 const stompSocketStore = useStompSocketStore()
 const pageParamStore = usePageParamStore()
@@ -84,6 +85,11 @@ const menuOptions = computed<MenuOption[]>(() => [
     label: renderRouterLabel(t('sidePanel.challenges'), '/challenges'),
     key: 'challenges-option',
     icon: renderIcon(List)
+  },
+  {
+    label: renderRouterLabel(t('sidePanel.users'), '/users'),
+    key: 'users-option',
+    icon: renderIcon(UserListIcon)
   }
 ])
 

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useApi } from '@/composables/useApi'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useStompSocketStore, type SubscriptionCallback } from '@/stores/useStompSocketStore'
 import type { PlayerSide, TimeControl } from '@/types/ChessParty'
 import type { Challenge, PlayerColor } from '@/types/Challenge'
+import type { SocketMessage } from '@/types/Socket'
 import type { UserInfo } from '@/types/UserInfo'
 import {
   NButton,
@@ -18,7 +20,7 @@ import {
   useNotification,
   type DataTableColumns,
 } from 'naive-ui'
-import { computed, h, onMounted, ref } from 'vue'
+import { computed, h, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
@@ -30,9 +32,13 @@ type ChallengeListRow = Challenge & {
 
 const api = useApi()
 const authStore = useAuthStore()
+const socketStore = useStompSocketStore()
 const router = useRouter()
 const notification = useNotification()
 const { t } = useI18n()
+
+const createdChallengesTopicDestination = '/challenges/created'
+const acceptedChallengesTopicDestination = '/challenges/accepted'
 
 const challenges = ref<Challenge[]>([])
 const userMap = ref<Record<string, UserInfo | null>>({})
@@ -42,6 +48,8 @@ const creating = ref(false)
 const initialMinutes = ref(10)
 const incrementSeconds = ref(5)
 const selectedSide = ref<PlayerSide | 'random'>('random')
+let createdChallengeSubscriptionCallback: SubscriptionCallback | null = null
+let acceptedChallengeSubscriptionCallback: SubscriptionCallback | null = null
 
 const challengeRows = computed<ChallengeListRow[]>(() => {
   return challenges.value
@@ -98,6 +106,68 @@ async function loadChallenges() {
   } finally {
     loading.value = false
   }
+}
+
+async function upsertChallenge(challenge: Challenge) {
+  const existingIndex = challenges.value.findIndex((item) => item.id === challenge.id)
+
+  if (existingIndex >= 0) {
+    challenges.value.splice(existingIndex, 1, challenge)
+  } else {
+    challenges.value = [challenge, ...challenges.value]
+  }
+
+  await loadUserNames([challenge])
+}
+
+function removeChallenge(id: string) {
+  challenges.value = challenges.value.filter((challenge) => challenge.id !== id)
+}
+
+function resolveChallengeId(payload: unknown): string | null {
+  if (typeof payload !== 'object' || payload === null) {
+    return null
+  }
+
+  const maybeChallenge = payload as Partial<Challenge>
+  return typeof maybeChallenge.id === 'string' && maybeChallenge.id.length > 0
+    ? maybeChallenge.id
+    : null
+}
+
+function unsubscribeFromChallengesTopics() {
+  if (createdChallengeSubscriptionCallback !== null) {
+    socketStore.unsubscribe(createdChallengesTopicDestination, createdChallengeSubscriptionCallback)
+  }
+
+  if (acceptedChallengeSubscriptionCallback !== null) {
+    socketStore.unsubscribe(acceptedChallengesTopicDestination, acceptedChallengeSubscriptionCallback)
+  }
+
+  createdChallengeSubscriptionCallback = null
+  acceptedChallengeSubscriptionCallback = null
+}
+
+function subscribeToChallengesTopics() {
+  unsubscribeFromChallengesTopics()
+
+  createdChallengeSubscriptionCallback = async (message) => {
+    const challenge = (JSON.parse(message.body) as SocketMessage).payload as Challenge
+    await upsertChallenge(challenge)
+  }
+
+  acceptedChallengeSubscriptionCallback = (message) => {
+    const challengeId = resolveChallengeId((JSON.parse(message.body) as SocketMessage).payload)
+
+    if (!challengeId) {
+      return
+    }
+
+    removeChallenge(challengeId)
+  }
+
+  socketStore.subscribe(createdChallengesTopicDestination, createdChallengeSubscriptionCallback)
+  socketStore.subscribe(acceptedChallengesTopicDestination, acceptedChallengeSubscriptionCallback)
 }
 
 function formatMinutes(value: number): string {
@@ -248,6 +318,11 @@ function createRowProps(row: ChallengeListRow) {
 
 onMounted(async () => {
   await loadChallenges()
+  subscribeToChallengesTopics()
+})
+
+onBeforeUnmount(() => {
+  unsubscribeFromChallengesTopics()
 })
 </script>
 

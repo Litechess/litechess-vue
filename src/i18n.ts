@@ -119,6 +119,30 @@ const messages = {
         status: "Status"
       }
     },
+    usersPage: {
+      title: "Players",
+      empty: "No users found.",
+      foundCount: "Found {shown} of {total} players",
+      loadErrorTitle: "Users are unavailable",
+      loadErrorDescription: "Failed to load the user list.",
+      columns: {
+        user: "User",
+        status: "Status",
+        registrationDate: "Registration date"
+      },
+      filters: {
+        searchPlaceholder: "Search by username",
+        allStatuses: "All statuses",
+        onlineOnly: "Online only",
+        offlineOnly: "Offline only"
+      },
+      sort: {
+        nicknameAsc: "Name A-Z",
+        nicknameDesc: "Name Z-A",
+        createdDesc: "Newest first",
+        createdAsc: "Oldest first"
+      }
+    },
     gameStatus: {
       draw: "Draw",
       whiteWin: "White wins",
@@ -133,6 +157,7 @@ const messages = {
       profile: "Profile",
       game: "Play",
       challenges: "Challenges",
+      users: "Players",
       exit: "Log out",
       language: 'Language'
     }
@@ -255,6 +280,30 @@ const messages = {
             status: "Статус"
         }
     },
+    usersPage: {
+        title: "Игроки",
+        empty: "Пользователи не найдены.",
+        foundCount: "Найдено игроков: {shown} из {total}",
+        loadErrorTitle: "Список пользователей недоступен",
+        loadErrorDescription: "Не удалось загрузить список пользователей.",
+        columns: {
+            user: "Пользователь",
+            status: "Статус",
+            registrationDate: "Дата регистрации"
+        },
+        filters: {
+            searchPlaceholder: "Поиск по имени",
+            allStatuses: "Все статусы",
+            onlineOnly: "Только онлайн",
+            offlineOnly: "Только оффлайн"
+        },
+        sort: {
+            nicknameAsc: "Имя А-Я",
+            nicknameDesc: "Имя Я-А",
+            createdDesc: "Сначала новые",
+            createdAsc: "Сначала старые"
+        }
+    },
     gameStatus: {
         draw: "Ничья",
         whiteWin: "Победа белых",
@@ -270,6 +319,7 @@ const messages = {
         profile: "Профиль",
         game: "Играть",
         challenges: "Вызовы",
+        users: "Игроки",
         exit: "Выйти",
         language: 'Язык'
     }

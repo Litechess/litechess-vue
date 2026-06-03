@@ -52,6 +52,10 @@ export function useApi() {
     return _httpClient.get(`api/v1/users/${id}`)
   }
 
+  async function getAllUsers(): Promise<UserInfo[]> {
+    return _httpClient.get(`api/v1/users`)
+  }
+
   async function getUserOnline(id: string): Promise<OnlineResponse> {
     return _httpClient.get(`api/v1/online/${id}`)
   }
@@ -83,6 +87,7 @@ export function useApi() {
     registerUser,
     uploadUserAvatar,
     getUserInfo,
+    getAllUsers,
     getUserAvatar,
     getServerTime
   }
