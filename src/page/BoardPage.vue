@@ -3,14 +3,13 @@ import { useApi } from '@/composables/useApi'
 import { useBoard } from '@/composables/useBoard'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { type ChessParty, type GameStatus } from '@/types/ChessParty'
-import { NButton, NFlex, useNotification } from 'naive-ui'
+import { NFlex, useNotification } from 'naive-ui'
 import { computed, onMounted, ref, watch, type Ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { BoardApi, type MoveEvent } from 'vue3-chessboard'
 import LiveGameView from '@/components/game/LiveGameView.vue'
 import SideInfoPanel from '@/components/info/SideInfoPanel.vue'
 import { useLiveGameStore } from '@/stores/useLiveGameStore'
-import { useStompSocketStore } from '@/stores/useStompSocketStore'
 import type { useLiveGame } from '@/composables/useLiveGame'
 import type { DrawDecline, DrawProposition, GameResult } from '@/types/MoveRequest'
 import { useMediaQuery } from '@vueuse/core'
@@ -43,7 +42,6 @@ const authStore = useAuthStore()
 const api = useApi()
 const route = useRoute()
 const liveGameStore = useLiveGameStore()
-const stompSocketStore = useStompSocketStore()
 const notification = useNotification()
 const isMobile = useMediaQuery('(max-width: 767px)')
 
@@ -154,12 +152,6 @@ const onMove = (move: MoveEvent) => {
   }
 }
 
-const forceSocketReconnect = () => {
-  console.log('force manual stomp connect')
-  stompSocketStore.connect()
-}
-
-
 
 const userInfoWhite = ref<UserInfo | undefined>(undefined)
 const userInfoBlack = ref<UserInfo | undefined>(undefined)
@@ -228,12 +220,6 @@ watch(
         :on-game-finish="onGameFinish"
       />
       <n-flex>
-        <n-button
-          type="warning"
-          secondary
-          @click="forceSocketReconnect">
-          Force STOMP reconnect
-        </n-button>
         <side-info-panel
           :show-game-event-button="showGameEventButtons"
           :gameId="gameIdParam"
