@@ -6,7 +6,7 @@ import { useAuthStore } from './useAuthStore'
 
 export type SubscriptionCallback = (payload: IMessage) => void
 export type SubscriptionInfo = {
-  id: string
+  id: string | null
   unsubscribe: () => void
   callbacks: Set<SubscriptionCallback>
   destination: string
@@ -20,6 +20,9 @@ type PendingSubscriptionInfo = {
 export type PendingMessage = {
   destination: string
   payload: string
+}
+type DisconnectOptions = {
+  preserveState?: boolean
 }
 
 export const useStompSocketStore = defineStore('stompWebSocket', () => {
@@ -59,7 +62,9 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
   }
 
   const connect = async (reconnectDelay = DEFAULT_RECONNECT_DELAY) => {
-    if (isConnected.value) await disconnect()
+    if (_client != null) {
+      await disconnect({ preserveState: true })
+    }
 
     _client = new Client({
       brokerURL: BROKER_URL,
@@ -72,15 +77,16 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
         console.log('✅ STOMP connected')
         isConnected.value = true
 
-        // Обработка отложенных действий
+        // Сначала восстанавливаем существующие подписки после нового STOMP session.
+        _activeSubscriptions.forEach((info) => {
+          const stompSub = internalSubscribe(info.destination, info.personal)
+          info.id = stompSub.id
+          info.unsubscribe = stompSub.unsubscribe
+        })
+
+        // Затем применяем операции, накопленные во время отсутствия соединения.
         _pendingUnsubscriptions.forEach(internalUnsubscribe)
         _pendingUnsubscriptions.clear()
-
-        _activeSubscriptions.forEach((info) => {
-          if (!info.id) {
-            internalSubscribe(info.destination, info.personal)
-          }
-        })
 
         _pendingSubscriptions.forEach((info) => {
           subscribe(info.destination, info.callback, info.personal)
@@ -93,20 +99,38 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
       },
 
       onStompError: (frame) => {
+        isConnected.value = false
         console.error('❌ STOMP error:', frame.headers['message'], frame.body)
+      },
+
+      onWebSocketClose: () => {
+        isConnected.value = false
+      },
+
+      onDisconnect: () => {
+        isConnected.value = false
       },
     })
 
     _client.activate()
   }
 
-  const disconnect = async () => {
+  const disconnect = async ({ preserveState = false }: DisconnectOptions = {}) => {
     isConnected.value = false
-    _activeSubscriptions.clear()
-    _pendingMessages.length = 0
-    _pendingUnsubscriptions.clear()
-    _pendingSubscriptions.clear()
+
+    if (!preserveState) {
+      _activeSubscriptions.clear()
+      _pendingMessages.length = 0
+      _pendingUnsubscriptions.clear()
+      _pendingSubscriptions.clear()
+    } else {
+      _activeSubscriptions.forEach((info) => {
+        info.id = null
+      })
+    }
+
     await _client?.deactivate()
+    _client = null
   }
 
   const onConnect = (callback: () => void) => {
@@ -191,7 +215,9 @@ export const useStompSocketStore = defineStore('stompWebSocket', () => {
     if (!info) return
 
     // Передаём destination вручную, чтобы сервер его получил в UNSUBSCRIBE
-    _client?.unsubscribe(info.id, { destination: info.destination })
+    if (info.id != null) {
+      _client?.unsubscribe(info.id, { destination: info.destination })
+    }
 
     _activeSubscriptions.delete(destination)
   }

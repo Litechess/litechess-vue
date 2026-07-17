@@ -83,6 +83,12 @@ export function useLiveGame() {
     }
     const promise: Promise<LiveGameResponse> =_api.getLiveGame(_currentGameId).then((liveGameResponse) => {
       const moves: Move[] = _mergeMoves(liveGameResponse.game.moves, _pendingMoves)
+      console.log('sync live game state', {
+        gameId: _currentGameId,
+        serverMoves: liveGameResponse.game.moves.length,
+        pendingMoves: _pendingMoves.length,
+        mergedMoves: moves.length,
+      })
       _board.loadPgn(moves.map(m => m.san).join(' '))
       _pendingMoves = []
       isSync.value = true
